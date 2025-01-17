@@ -20,6 +20,39 @@ template <size_t n> struct MyState {
   }
 };
 
+struct LorenzTest {
+
+  inline static const State::TimeVariable t;
+  inline static const State::Variable<0> x;
+  inline static const State::Variable<1> y;
+  inline static const State::Variable<2> z;
+
+  double sigma, rho, beta;
+
+  auto get_lhs() {
+    return Vector(sigma * (y - x), rho * x - x * z, -beta * z + x * z);
+  }
+
+  auto get_ic() { return Vector(sin(t), cos(t), t * t); }
+
+  auto get_events() { return Events(StepEvent(t)); }
+};
+
+auto t = State::TimeVariable();
+auto [x, y, z] = State::Variables<3>();
+
+struct LorenzTest2 {
+  double sigma, rho, beta;
+
+  auto get_lhs() {
+    return Vector(sigma * (y - x), rho * x - x * z, -beta * z + x * z);
+  }
+
+  auto get_ic() { return Vector(sin(t), cos(t), t * t); }
+
+  /*auto get_events() { return Events(Event(x == y, t)); }*/
+};
+
 int main(int argc, char *argv[]) {
 
   /*MyState state{Vec<3>{1, 2, 3}, 11, Vec<3>{1.1, 2.2, 3.3}, 21};*/
@@ -38,7 +71,8 @@ int main(int argc, char *argv[]) {
 
   {
     auto t = State::TimeVariable();
-    auto [x, y, z] = State::Variables<3>();
+    auto [x, y, z] =
+        State::Variables<3>(); // this is not possible inside a class ((((
     auto state = MyState<3>{.prev_t = 0,
                             .curr_t = 1,
                             .prev_x = Vec<3>{1, 2, 3},
@@ -56,6 +90,10 @@ int main(int argc, char *argv[]) {
 
     assert((Vector(x, y, z)(state)) == (Vec<3>{10, 20, 30}));
     assert((Vector(y - x, x - y, z - x - y)(state)) == (Vec<3>{10, -10, 0}));
+
+    Vector v1(x, y, z);
+
+    assert(v1(state) == (Vec<3>{10, 20, 30}));
 
     assert(x[t](state) == t(state));
     assert(x[t + 30](state) == (t + 30)(state));

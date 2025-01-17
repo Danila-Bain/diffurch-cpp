@@ -177,15 +177,15 @@ EVENT_WITHOUT_DETECTION(StopEvent);  // Event after integration stop
 /*CallEvent(nullptr, Var(callcount)++);*/
 
 // Class that contains events that will run simultaniously
-template <template <typename...> typename EventType, typename... EventTypes>
-  requires(is_kind_of_v<EventTypes, EventType> && ...)
+template <typename... EventTypes>
+/*requires(is_kind_of_v<EventTypes, EventType> && ...)*/
 struct SimultaniousEvents {
   std::tuple<EventTypes...> event_tuple;
 
-  SimultaniousEvents(std::tuple<EventTypes...> event_tuple_)
+  SimultaniousEvents(const std::tuple<EventTypes...> &event_tuple_)
       : event_tuple(event_tuple_) {};
-  SimultaniousEvents(EventTypes... events_)
-      : event_tuple(std::make_tuple(events_...)) {};
+  /*SimultaniousEvents(const EventTypes &...events_)*/
+  /*    : event_tuple(std::make_tuple(events_...)) {};*/
 
   // run event(state) for all events in event_tuple
   void operator()(auto &state) {
@@ -204,7 +204,7 @@ struct filter_events_impl {
 
 template <template <typename...> typename EventType, typename... Ts>
 constexpr auto filter_events(const std::tuple<Ts...> &events) {
-  return filter_events_impl<EventType>::impl(events);
+  return filter_events_impl<EventType, Ts...>::impl(events);
 }
 
 template <template <typename...> typename EventType, typename... Ts>
@@ -218,20 +218,21 @@ using filter_events_t =
 
 template <template <typename...> typename EventType, typename... EventTypes>
 auto filter_simultaneous_events(const std::tuple<EventTypes...> &events) {
-  return SimultaniousEvents<EventType>(
-      filter_events<EventType, EventTypes...>(events));
+  return SimultaniousEvents(filter_events<EventType, EventTypes...>(events));
+  /*return std::apply(*/
+  /*    [&](auto... args) { return SimultaniousEvents<EventType>(args...); },*/
+  /*    filter_events<EventType, EventTypes...>(events));*/
 }
 
 template <template <typename...> typename EventType, typename... EventTypes>
 auto filter_simultaneous_events(const EventTypes &...events) {
-  return SimultaniousEvents<EventType>(
-      filter_events<EventType, EventTypes...>(events...));
+  return SimultaniousEvents(filter_events<EventType, EventTypes...>(events...));
 }
 
 template <template <typename...> typename EventType, typename... EventTypes>
 using filter_simultaneous_events_t =
-    decltype(filter_simultaneous_events<EventType>(
-        std::declval<EventTypes>()...));
+    decltype(filter_simultaneous_events<EventType, EventTypes...>(
+        std::make_tuple(std::declval<EventTypes>()...)));
 
 template <typename... EventTypes> struct Events {
 private:
