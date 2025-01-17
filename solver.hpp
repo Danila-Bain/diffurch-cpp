@@ -1,7 +1,7 @@
 #include "equation.hpp"
 #include "events.hpp"
 #include "state.hpp"
-#include "state_function.hpp"
+#include "state_symbols.hpp"
 #include "vec.hpp"
 #include <algorithm>
 #include <boost/preprocessor.hpp>
@@ -9,24 +9,29 @@
 #include <tuple>
 #include <vector>
 
+#include "rk_tables/rk98.hpp"
+using RK = rk98;
+
 // This class is intended to be exclusively used
 // with Curiously Recurring Template Pattern (CRTP),
 // that is in creating other classes like
 // ``struct Lorenz : Solver<Lorenz> {...};``,
 // that inherit solver with themselves.
-template <Solvable Equation, RK_Table RK> struct Solver {
+template <typename Equation> struct Solver {
   auto solution(double initial_time, double final_time) {
     auto self = static_cast<Equation *>(this);
     constexpr size_t n = order_of_equation<Equation>::value;
 
-    /*auto &step_events = self->step_events;*/
-    /*auto &stop_integration_events = self->stop_integration_events;*/
-    /*auto &conditional_events = self->conditional_events;*/
-    /*auto &stepsize_controller = self->stepsize_controller;*/
+    auto lhs = self->get_lhs();
+    auto ic = self->get_ic();
+
+    auto [detection_events, step_events, reject_events, call_events,
+          start_events, stop_events] =
+        Events(self->get_events(), lhs.get_events());
 
     double stepsize = stepsize_controller.initial_stepsize();
 
-    auto state = State<Equation, RK>(initial_time, self);
+    auto state = State::State<Equation, RK>(initial_time, self);
 
     array<Vec<n>, RK::s> K;
     Vec<n> delta_x;
@@ -145,28 +150,33 @@ template <Solvable Equation, RK_Table RK> struct Solver {
 /*  }*/
 /*};*/
 
-struct Lorenz : Solver<Lorenz>, RK98 {
-  State::Time t;
-  inline static auto [x, y, z] = StateVariables<3>();
+auto t = State::TimeVariable();
+auto [x, y, z] = State::Variables<3>();
+
+struct Lorenz : Solver<Lorenz> {
+
   double sigma, rho, beta;
 
   Lorenz(double sigma_, double rho_, double beta_)
       : sigma(sigma_), rho(rho_), beta(beta_) {};
 
-  LHS lhs(sigma *(y - x), rho *x - x * z, -beta *z + x * sign(z[t - 1]));
+  auto get_lhs() {
+    return State::Vector(sigma * (y - x), rho * x - x * z, -beta * z + x * z);
+  }
 
-  IC initial_condition(beta *sin(t), cos(t), sin(t));
+  auto get_ic() { return State::Vector(sin(t), cos(t), t * t); }
 
-  Events events(WhenEqualZero(x - y) | WhileGreaterZero(x + y) | Save(t) |
-                    Set(counter++),
-                WhenStep() | Save(t, x, y, z),
-                WhenGreater(abs(x), 1000) | StopIntegration(),
-                WhenStopIntegration() | Save(make_tuple(x, y, z)),
-                WhenStepRejected() | Save(t) |
-                    Set([&]() { rejected_counter++ }),
-                WhenZero(z[t - 1]));
+  auto get_events() { return Events(StepEvent(t)); }
+  /**/
+  /*Events events(WhenEqualZero(x - y) | WhileGreaterZero(x + y) | Save(t) |*/
+  /*                  Set(counter++),*/
+  /*              WhenStep() | Save(t, x, y, z),*/
+  /*              WhenGreater(abs(x), 1000) | StopIntegration(),*/
+  /*              WhenStopIntegration() | Save(make_tuple(x, y, z)),*/
+  /*              WhenStepRejected() | Save(t) |*/
+  /*                  Set([&]() { rejected_counter++ }),*/
+  /*              WhenZero(z[t - 1]));*/
 };
-
 
 struct HarmonicOscillator : Solver<HarmonicOscillator>, RK98 {
   TimeVariable t;
