@@ -6,7 +6,6 @@
 #include <tuple>
 #include <type_traits>
 #include <vector>
-#include <array>
 
 namespace State {
 
@@ -156,6 +155,25 @@ STATE_OPERATOR_OVERLOAD(+, Add);
 STATE_OPERATOR_OVERLOAD(-, Sub);
 STATE_OPERATOR_OVERLOAD(*, Mul);
 STATE_OPERATOR_OVERLOAD(/, Div);
+
+#define STATE_UNARY_OPERATOR_OVERLOAD(op, op_name)                             \
+  template <IsStateExpression Arg> struct op_name : StateExpression {          \
+    Arg arg;                                                                   \
+    op_name(Arg arg_) : arg(arg_) {}                                           \
+    auto operator()(const auto &state) const { return op(arg(state)); }        \
+    auto operator()(const auto &state, double t) const {                       \
+      return op(arg(state, t));                                                \
+    }                                                                          \
+    auto operator()(double t) const { return op(arg(t)); }                     \
+    auto prev(const auto &state) const { return op(arg.prev(state)); }         \
+    auto get_events() { return Events(arg.get_events(), arg.get_events()); }   \
+  };                                                                           \
+  template <IsStateExpression Arg> auto operator op(Arg arg) {                 \
+    return op_name(arg);                                                       \
+  }
+
+STATE_UNARY_OPERATOR_OVERLOAD(-, Neg);
+STATE_UNARY_OPERATOR_OVERLOAD(+, UnaryPlus);
 
 #define STATE_FUNCTION_OVERLOAD(func)                                          \
   template <IsStateExpression Arg> struct Function_##func : StateExpression {  \
