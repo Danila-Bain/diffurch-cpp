@@ -10,8 +10,7 @@ struct rk98 {
   constexpr static size_t order_embedded = 8;
   constexpr static size_t order_interpolation = 9;
 
-
-  constexpr static std::array<std::array<double, 21>, 26> a{
+  constexpr static std::array<std::array<double, 25>, 26> a{
       {{},
        {0.02173913043478260869565217391304347826086956521739},
        {-0.11698050118114486205818241524969622410384223979750,

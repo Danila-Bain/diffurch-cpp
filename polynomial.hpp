@@ -20,13 +20,12 @@ private:
   std::array<double, degree + 1> coefs;
 
 public:
-  constexpr Polynomial(const std::array<double, degree + 1> &coefs)
-      : coefs(coefs) {};
-
+  constexpr Polynomial(const std::array<double, degree + 1> &coefs_)
+      : coefs(coefs_) {};
 
   template <typename... Args>
-  constexpr Polynomial(Args... args) : coefs({args...}) {};
-  /*constexpr Polynomial(std::initializer_list<double> list) : coefs(list) {};*/ //doesn't work with constexpr for some reason
+  constexpr Polynomial(Args... args) : coefs({args...}){};
+  /*constexpr Polynomial(std::initializer_list<double> list) : coefs(list) {};*/ // doesn't work with constexpr for some reason
 
   // performance can be improved:
   // derivative coefficeients can be precalculated

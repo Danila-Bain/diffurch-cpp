@@ -1,37 +1,67 @@
+#pragma once
+
 #include "events.hpp"
-/*#include "state.hpp"*/
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <math.h>
 #include <tuple>
 #include <type_traits>
-#include <vector>
+#include <utility>
 
 namespace State {
 
 struct StateExpression {};
 
 template <typename T>
-concept IsStateExpression = std::is_base_of_v<StateExpression, T>;
+concept IsStateExpression = std::is_base_of_v<StateExpression, std::decay_t<T>>;
 
 template <typename T>
-  requires(!IsStateExpression<T>)
-struct Constant : StateExpression {
-  Constant(T value_) : value(value_) {};
+concept IsNotStateExpression =
+    !std::is_base_of_v<StateExpression, std::decay_t<T>>;
+
+template <IsNotStateExpression T = double> struct Constant : StateExpression {
   T value;
 
-  T operator()(const auto &state) const { return value; }
-  T prev(const auto &state) const { return value; }
-  T operator()(const auto &state, double t) const { return value; }
-  T operator()(double t) const { return value; }
+  Constant(const T &val) : value(val) {}
+  operator T() const { return value; }
+
+  T operator()([[maybe_unused]] const auto &state) const { return value; }
+  T prev([[maybe_unused]] const auto &state) const { return value; }
+  T operator()([[maybe_unused]] const auto &state,
+               [[maybe_unused]] double t) const {
+    return value;
+  }
+  T operator()([[maybe_unused]] double t) const { return value; }
 };
 
+/*template <IsNotStateExpression T> struct Constant : StateExpression {*/
+/*  template <typename U>*/
+/*    requires(!std::is_rvalue_reference<U &&>::value)*/
+/*  explicit Constant(U &&val) : value(std::forward<U>(val)) {}*/
+/**/
+/*  // For rvalue arguments: store by reference*/
+/*  template <typename U>*/
+/*    requires(std::is_rvalue_reference<U &&>::value)*/
+/*  explicit Constant(U &&val) : value(val) {}*/
+/**/
+/*  std::conditional_t<std::is_rvalue_reference<T &&>::value, T &, T> value;*/
+/**/
+/*  T operator()(const auto &state) const { return value; }*/
+/*  T prev(const auto &state) const { return value; }*/
+/*  T operator()(const auto &state, double t) const { return value; }*/
+/*  T operator()(double t) const { return value; }*/
+/*};*/
+/*template <typename T> Constant(T &&) -> Constant<T>;*/
+
 struct TimeVariable : StateExpression {
-  static auto operator()(const auto &state) { return state.curr_t; }
-  static auto prev(const auto &state) { return state.prev_t; }
-  static auto operator()(const auto &state, double t) { return t; }
+  static auto operator()(const auto &state) { return state.t_curr; }
+  static auto prev(const auto &state) { return state.t_prev; }
+  static auto operator()([[maybe_unused]] const auto &state, double t) {
+    return t;
+  }
   static auto operator()(double t) { return t; }
-  auto get_events() { return Events(); }
+  static auto get_events() { return Events(); }
 };
 
 template <size_t coordinate, IsStateExpression Arg>
@@ -47,31 +77,31 @@ struct VariableAt : StateExpression {
   auto operator()(const auto &state, double t) const {
     return state.template eval<0, coordinate>(arg(state, t));
   }
-  auto get_events() { return arg.get_events(); }
+  auto get_events() const { return arg.get_events(); }
 };
 
 template <size_t coordinate = -1> struct Variable : StateExpression {
   static constexpr auto operator()(const auto &state) {
     if constexpr (coordinate == -1)
-      return state.curr_x;
+      return state.x_curr;
     else
-      return state.curr_x[coordinate];
+      return state.x_curr[coordinate];
   }
   static auto prev(const auto &state) {
     if constexpr (coordinate == -1)
-      return state.prev_x;
+      return state.x_prev;
     else
-      return state.prev_x[coordinate];
+      return state.x_prev[coordinate];
   }
   static auto operator()(const auto &state, double t) {
     return state.template eval<0, coordinate>(t);
   }
 
-  template <IsStateExpression Arg> auto operator[](Arg arg) {
+  template <IsStateExpression Arg> static auto operator[](Arg arg) {
     return VariableAt<coordinate, Arg>(arg);
   }
 
-  auto get_events() { return Events(); }
+  static auto get_events() { return Events(); }
 };
 
 template <size_t N, size_t from = 0, size_t to = N> constexpr auto Variables() {
@@ -138,17 +168,19 @@ template <typename... Coordinates> struct Vector : StateExpression {
       return l(state, t) op r(state, t);                                       \
     }                                                                          \
     auto operator()(double t) const { return l(t) op r(t); }                   \
-    auto get_events() { return Events(l.get_events(), r.get_events()); }       \
+    auto get_events() const { return Events(l.get_events(), r.get_events()); } \
   };                                                                           \
   template <IsStateExpression L, IsStateExpression R>                          \
   auto operator op(L l, R r) {                                                 \
     return op_name(l, r);                                                      \
   }                                                                            \
-  template <typename L, IsStateExpression R> auto operator op(L l, R r) {      \
-    return op_name(Constant(l), r);                                            \
+  template <IsNotStateExpression L, IsStateExpression R>                       \
+  auto operator op(L &&l, R r) {                                               \
+    return op_name(Constant(std::forward<L>(l)), r);                           \
   }                                                                            \
-  template <IsStateExpression L, typename R> auto operator op(L l, R r) {      \
-    return op_name(l, Constant(r));                                            \
+  template <IsStateExpression L, IsNotStateExpression R>                       \
+  auto operator op(L l, R &&r) {                                               \
+    return op_name(l, Constant(std::forward<R>(r)));                           \
   }
 
 STATE_OPERATOR_OVERLOAD(+, Add);
@@ -166,7 +198,7 @@ STATE_OPERATOR_OVERLOAD(/, Div);
     }                                                                          \
     auto operator()(double t) const { return op(arg(t)); }                     \
     auto prev(const auto &state) const { return op(arg.prev(state)); }         \
-    auto get_events() { return Events(arg.get_events(), arg.get_events()); }   \
+    auto get_events() const { return arg.get_events(); }                       \
   };                                                                           \
   template <IsStateExpression Arg> auto operator op(Arg arg) {                 \
     return op_name(arg);                                                       \
@@ -185,7 +217,7 @@ STATE_UNARY_OPERATOR_OVERLOAD(+, UnaryPlus);
     }                                                                          \
     auto operator()(double t) const { return func(arg(t)); }                   \
     auto prev(const auto &state) const { return func(arg.prev(state)); }       \
-    auto get_events() { return Events(arg.get_events(), arg.get_events()); }   \
+    auto get_events() const { return arg.get_events(); }                       \
   };                                                                           \
   template <IsStateExpression Arg> auto func(Arg arg) {                        \
     return Function_##func(arg);                                               \
@@ -215,10 +247,10 @@ template <IsStateExpression Arg> struct Function_sign : StateExpression {
 
   auto set_value(const auto &state) { value = sign(arg(state)); }
 
-  auto get_events() {
-    return Events(arg.get_events(),
-                  Event(arg == 0, nullptr,
-                        [this](const auto &state) { set_value(state); }));
+  auto get_events() const {
+    auto set_value_lambda = [this](const auto &state) { set_value(state); };
+    return Events(arg.get_events(), StartEvent(nullptr, set_value_lambda),
+                  Event(arg == 0, nullptr, set_value_lambda));
   }
 };
 template <IsStateExpression Arg> auto sign(Arg arg) {
@@ -249,7 +281,7 @@ template <typename Derived> struct EventFunctionInterface {
     auto self = static_cast<Derived *>(this);
     if (self->detect(state)) {
       return find_root([&state, &self](double t) { return (*self)(state, t); },
-                       state.prev_t, state.curr_t);
+                       state.t_prev, state.t_curr);
     } else {
       return std::numeric_limits<double>::max();
     }

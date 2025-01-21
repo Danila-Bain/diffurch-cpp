@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 #include "equation.hpp"
 #include "vec.hpp"
@@ -7,48 +8,54 @@
 
 namespace State {
 
-struct StateClassPlaceHolder {
-  double curr_t;
-  std::array<double, 0> curr_x;
-  double prev_t;
-  std::array<double, 0> prev_x;
-  template <size_t derivative_order, size_t index = -1>
-  auto eval(double t) const {
-    if constexpr (index == -1) {
-      return curr_x;
-    } else {
-      return curr_x[index];
-    }
-  }
-};
+/*struct StateClassPlaceHolder {*/
+/*  double t_curr;*/
+/*  std::array<double, 0> x_curr;*/
+/*  double t_prev;*/
+/*  std::array<double, 0> x_prev;*/
+/*  template <size_t derivative_order, size_t index = -1>*/
+/*  auto eval(double t) const {*/
+/*    if constexpr (index == -1) {*/
+/*      return x_curr;*/
+/*    } else {*/
+/*      return x_curr[index];*/
+/*    }*/
+/*  }*/
+/*};*/
 
-template <Solvable Equation, RK_Table RK> struct State {
-  static constexpr size_t n = order_of_equation<Equation>::value;
+template <typename RK, typename InitialConditionHandler> struct State {
 
+  static constexpr size_t n =
+      std::tuple_size<decltype(std::declval<InitialConditionHandler>()(
+          0.))>::value;
+
+  InitialConditionHandler ic;
   // independent variable
-  double curr_t;
-  double prev_t;
+  double t_curr;
+  double t_prev;
   std::vector<double> t_sequence;
 
   // dependent variable
-  Vec<n> curr_x;
-  Vec<n> prev_x;
+  Vec<n> x_curr;
+  Vec<n> x_prev;
   vector<Vec<n>> x_sequence;
 
   // K values for interpolation, runge kutta method must support intrpolation
   // in the future, queue should be used instead of vector
+  array<Vec<n>, RK::s> K_curr;
   vector<array<Vec<n>, RK::s>> K_sequence;
 
-  Equation *eq_ptr;
+  /*Equation *eq_ptr;*/
 
-  State(double initial_time, Equation *eq_ptr_) {
-    eq_ptr = eq_ptr_;
+  State(double initial_time, InitialConditionHandler ic_)
+      : ic(ic_), t_curr(initial_time), t_prev(t_curr), t_sequence({t_curr}),
+        x_curr(ic(initial_time)), x_prev(x_curr), x_sequence({x_curr}) {};
 
-    curr_t = prev_t = initial_time;
-    t_sequence.push_back(curr_t);
-
-    curr_x = prev_x = eq_ptr->initial_condition(initial_time);
-    x_sequence.push_back(curr_x);
+  void push_back_curr() {
+    t_sequence.push_back(t_curr);
+    x_sequence.push_back(x_curr);
+    K_sequence.push_back(K_curr);
+    /*std::cout << x_sequence << std::endl << std::endl;*/
   }
 
   template <size_t derivative_order = 0, size_t index = -1>
@@ -59,9 +66,9 @@ template <Solvable Equation, RK_Table RK> struct State {
       // initial_condition is defined as a template instead of a regular member
       // function.
       if constexpr (derivative_order == 0)
-        return eq_ptr->initial_condition(t);
+        return ic(t);
       else
-        return eq_ptr->initial_condition<derivative_order>(t);
+        return ic<derivative_order>(t);
     } else {
       // t_sequence[i] would be the first element > t
       int i = std::distance(
@@ -71,14 +78,17 @@ template <Solvable Equation, RK_Table RK> struct State {
       double theta = (t - t_sequence[i - 1]) / h;
 
       static_assert(
-          requires { RK::eval<derivative_order>(K_sequence[i - 1], theta); },
-          "Chosen Runge-Kutta method doesn't support interpolation.");
+          requires {
+            RK::template eval<derivative_order>(K_sequence[i - 1], theta);
+          }, "Chosen Runge-Kutta method doesn't support interpolation.");
 
       if constexpr (index == -1)
-        return RK::eval<derivative_order>(K_sequence[i - 1], theta);
+        return RK::template eval<derivative_order>(K_sequence[i - 1], theta);
       else
-        return RK::eval<derivative_order>(K_sequence[i - 1][index], theta);
+        return RK::template eval<derivative_order>(K_sequence[i - 1][index],
+                                                   theta);
     }
   }
 };
+
 } // namespace State

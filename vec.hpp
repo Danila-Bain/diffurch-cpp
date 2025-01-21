@@ -101,7 +101,7 @@ std::array<T, N + M> concatenate(const std::array<T, N> &arr1,
   return result;
 }
 
-inline void VecCopy(double from, double &to, size_t i = 0) { to = from; }
+inline void VecCopy(double from, double &to, size_t = 0) { to = from; }
 
 template <size_t n, typename T>
 inline void VecCopy(T from, array<T, n> &to, size_t i = 0) {

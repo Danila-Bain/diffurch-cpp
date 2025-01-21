@@ -2,15 +2,16 @@
 #include "events.hpp"
 #include "state.hpp"
 #include "state_symbols.hpp"
+#include "stepsize_controller.hpp"
 #include "vec.hpp"
-#include <algorithm>
 #include <boost/preprocessor.hpp>
 #include <cstddef>
-#include <tuple>
-#include <vector>
+#include <limits>
 
 #include "rk_tables/rk98.hpp"
 using RK = rk98;
+
+using StepsizeController = ConstantStepsize;
 
 // This class is intended to be exclusively used
 // with Curiously Recurring Template Pattern (CRTP),
@@ -25,92 +26,108 @@ template <typename Equation> struct Solver {
     auto lhs = self->get_lhs();
     auto ic = self->get_ic();
 
-    auto [detection_events, step_events, reject_events, call_events,
-          start_events, stop_events] =
-        Events(self->get_events(), lhs.get_events());
+    /*auto [detection_events, step_events, reject_events, call_events,*/
+    /*      start_events, stop_events] =*/
+    /*    Events(self->get_events(), lhs.get_events());*/
+    auto events = Events(self->get_events(), lhs.get_events());
+
+    auto stepsize_controller = StepsizeController(0.05);
 
     double stepsize = stepsize_controller.initial_stepsize();
 
-    auto state = State::State<Equation, RK>(initial_time, self);
+    auto state = State::State<RK, decltype(ic)>(initial_time, ic);
 
-    array<Vec<n>, RK::s> K;
     Vec<n> delta_x;
     Vec<n> delta_x_hat;
     double error;
 
-    auto rk_step = [&]() {
-      for (int i = 0; i < RK::s; i++) {
-        state.curr_t = state.prev_t + stepsize * RK::C[i];
-        state.curr_x = state.prev_x + stepsize * dot(RK::A[i], K, i);
-        K[i] = self->lhs(state);
-      }
-      delta_x = stepsize * dot(RK::B, K, RK::s);
-      delta_x_hat = stepsize * dot(RK::B_hat, K, RK::s);
-      error = norm(delta_x - delta_x_hat);
-    };
+    events.start_events(state);
 
-    // before integration events
+    while (state.t_curr < final_time) {
 
-    while (state.curr_t < final_time) {
+      state.t_prev = state.t_curr;
+      state.x_prev = state.x_curr;
 
       // Runge-Kutta step
-      rk_step();
+      {
+        for (size_t i = 0; i < RK::s; i++) {
+          state.t_curr = state.t_prev + stepsize * RK::c[i];
+          state.x_curr =
+              state.x_prev + stepsize * dot(RK::a[i], state.K_curr, i);
+          state.K_curr[i] = lhs(state);
+          events.call_events(state);
+        }
+        delta_x = stepsize * dot(RK::b, state.K_curr, RK::s);
+        delta_x_hat = stepsize * dot(RK::bb, state.K_curr, RK::s);
+        error = norm(delta_x - delta_x_hat);
+
+        if constexpr (RK::c[RK::s - 1] != 1.)
+          state.t_curr = state.t_prev + stepsize;
+        state.x_curr = state.x_prev + delta_x;
+      }
+      /*std::cout << state.x_curr << std::endl;*/
 
       // stepsize for the next step, even if this step is rejected
-      stepsize = stepsize_controller.update_stepsize(stepsize, error);
-
-      if (stepsize_controller.reject_step(error)) {
-        /*step_rejected_events;*/
+      if (events.located_event_index != size_t(-1)) {
+        events.located_event(state);
+      } else if (double t_event = events.locate(state);
+                 t_event < std::numeric_limits<double>::max()) {
+        stepsize = t_event - state.t_prev;
         continue;
       }
 
-      state.curr_t = state.prev_t + stepsize;
-      state.curr_x = state.prev_x + delta_x;
+      stepsize = stepsize_controller.update_stepsize(stepsize, error);
 
-      // step_events
-      //
-      /*
-      Event handling:
-          When events:
-              * Event detection/location is called for each event
-                  * If multiple events are detected on one step, only the
-                    earliest is processed
-                  * Detection is done with just state function, like
-                    if (state_function(state) * state_function.prev(state) < 0)
-                  * Location is done using some root finding method,
-                    applied to interpolated state:
-                    t -> state_function(state, t)
-              * Step is redone to step-on located event
-              * Step callback is called:
-                  * Save current state to event's container
-                  * Change lhs function switches
-                  * If some state-chaning functions are there, they are forced
-                    to create new zero-sized step with changes applied,
-                    and call save for both of them
-          Step events:
-              * After each successful step, i.e., after step is accepted by
-      stepsize controller, after when-event is processed
-       */
+      if (stepsize_controller.reject_step(error)) {
+        events.reject_events(state);
+        continue;
+      }
 
-      // when events
-      /*if (when_event.disable)*/
-      /*  when_event.disable = false;*/
-      /*else if (when_event.detect(state)) {*/
-      /*  double t_event = step_event.locate(state);*/
-      /*  stepsize = t_event - state.prev_t;*/
-      /*  when_event.disable = true;*/
-      /*  continue;*/
-      /*}*/
+      state.push_back_curr();
 
-      state.prev_t = state.curr_t;
-      state.prev_x = state.curr_x;
+      events.step_events(state);
     }
 
-    // stop_integration_events
+    events.stop_events(state);
 
-    // returns
+    return events.get_saved();
   }
 };
+
+// step_events
+//
+/*
+Event handling:
+    When events:
+        * Event detection/location is called for each event
+            * If multiple events are detected on one step, only the
+              earliest is processed
+            * Detection is done with just state function, like
+              if (state_function(state) * state_function.prev(state) < 0)
+            * Location is done using some root finding method,
+              applied to interpolated state:
+              t -> state_function(state, t)
+        * Step is redone to step-on located event
+        * Step callback is called:
+            * Save current state to event's container
+            * Change lhs function switches
+            * If some state-chaning functions are there, they are forced
+              to create new zero-sized step with changes applied,
+              and call save for both of them
+    Step events:
+        * After each successful step, i.e., after step is accepted by
+stepsize controller, after when-event is processed
+ */
+
+// when events
+/*if (when_event.disable)*/
+/*  when_event.disable = false;*/
+/*else if (when_event.detect(state)) {*/
+/*  double t_event = step_event.locate(state);*/
+/*  stepsize = t_event - state.prev_t;*/
+/*  when_event.disable = true;*/
+/*  continue;*/
+/*}*/
 
 /*struct Lorens : Solver<Lorenz, RK98> {*/
 /*  double sigma;*/
@@ -150,55 +167,13 @@ template <typename Equation> struct Solver {
 /*  }*/
 /*};*/
 
-auto t = State::TimeVariable();
-auto [x, y, z] = State::Variables<3>();
-
-struct Lorenz : Solver<Lorenz> {
-
-  double sigma, rho, beta;
-
-  Lorenz(double sigma_, double rho_, double beta_)
-      : sigma(sigma_), rho(rho_), beta(beta_) {};
-
-  auto get_lhs() {
-    return State::Vector(sigma * (y - x), rho * x - x * z, -beta * z + x * z);
-  }
-
-  auto get_ic() { return State::Vector(sin(t), cos(t), t * t); }
-
-  auto get_events() { return Events(StepEvent(t)); }
-  /**/
-  /*Events events(WhenEqualZero(x - y) | WhileGreaterZero(x + y) | Save(t) |*/
-  /*                  Set(counter++),*/
-  /*              WhenStep() | Save(t, x, y, z),*/
-  /*              WhenGreater(abs(x), 1000) | StopIntegration(),*/
-  /*              WhenStopIntegration() | Save(make_tuple(x, y, z)),*/
-  /*              WhenStepRejected() | Save(t) |*/
-  /*                  Set([&]() { rejected_counter++ }),*/
-  /*              WhenZero(z[t - 1]));*/
-};
-
-struct HarmonicOscillator : Solver<HarmonicOscillator>, RK98 {
-  TimeVariable t;
-  inline static auto [x, Dx] = Statevariables<2>();
-  double x_0, Dx_0;
-
-  LHS lhs(Dx, -x);
-  IC initial_condition(x_0 *cos(t) + Dx_0 * sin(t),
-                       -x_0 *sin(t) + Dx_0 * cos(t));
-
-  // sensible default;
-  Events events(WhenStep() | SaveState());
-  /*Events events(SaveSteps());*/
-};
-
-struct RelayOscillator : Solver<RelayOscillator>, RK98 {
-  State::Time t;
-  State::Variable<0> x;
-  State::Variable<1> Dx;
-
-  State::Vector lhs(Dx, -sign(x));
-  State::Vector initial_condition(1, 0);
-
-  Events events(StepEvent(make_tuple(t, x, Dx)));
-};
+/*struct RelayOscillator : Solver<RelayOscillator>, RK98 {*/
+/*  State::Time t;*/
+/*  State::Variable<0> x;*/
+/*  State::Variable<1> Dx;*/
+/**/
+/*  State::Vector lhs(Dx, -sign(x));*/
+/*  State::Vector initial_condition(1, 0);*/
+/**/
+/*  Events events(StepEvent(make_tuple(t, x, Dx)));*/
+/*};*/

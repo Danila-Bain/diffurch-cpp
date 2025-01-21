@@ -1,9 +1,15 @@
+#pragma once
+
 #include "type_traits.hpp"
+#include <concepts>
 #include <cstddef>
 #include <limits>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
+
+#include <iostream>
 
 struct EventBase {};
 
@@ -63,7 +69,7 @@ struct EventDetectionInterface {
 };
 
 template <> struct EventDetectionInterface<std::nullptr_t> {
-  EventDetectionInterface(std::nullptr_t _ = nullptr) {}
+  EventDetectionInterface(std::nullptr_t = nullptr) {}
 };
 
 template <typename SaveHandler = std::nullptr_t> struct EventSaveInterface {
@@ -73,20 +79,22 @@ private:
 public:
   EventSaveInterface(SaveHandler save_handler_)
       : save_handler(save_handler_) {};
-
-  std::vector<double> saved;
-  void save(const auto &state) { saved.push_back(to_save(state)); }
+  std::tuple<std::vector<double>> saved;
+  void save(const auto &state) { std::get<0>(saved).push_back(to_save(state)); }
 };
 
 template <> struct EventSaveInterface<std::nullptr_t> {
-  EventSaveInterface(std::nullptr_t _ = nullptr) {}
+  EventSaveInterface(std::nullptr_t = nullptr) {};
+  std::tuple<> saved;
 };
 
 template <typename... SaveHandlers>
 struct EventSaveInterface<std::tuple<SaveHandlers...>> {
 private:
   std::tuple<SaveHandlers...> save_handlers;
-  template <size_t... index> void save_impl(const auto &state) {
+
+  template <size_t... index>
+  void save_impl(const auto &state, std::index_sequence<index...>) {
     (std::get<index>(saved).push_back(std::get<index>(save_handlers)(state)),
      ...);
   }
@@ -99,7 +107,7 @@ public:
       saved;
 
   void save(const auto &state) {
-    save_impl<std::index_sequence_for<SaveHandlers...>>(state);
+    save_impl(state, std::index_sequence_for<SaveHandlers...>{});
   }
 };
 
@@ -119,6 +127,14 @@ template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
   }
 };
 
+struct StopIntegration {
+
+  void operator()(auto &state) {
+    state.t_prev = state.t_curr;
+    state.t_curr = std::numeric_limits<double>::max();
+  }
+};
+
 template <typename DetectT = std::nullptr_t,
           typename SaveHandler = std::nullptr_t,
           typename SetHandler = std::nullptr_t>
@@ -129,19 +145,20 @@ private:
 public:
   Event(DetectT detect_ = nullptr, SaveHandler save_handler = nullptr,
         SetHandler set_handler = nullptr)
-      : _detect(detect_), EventSaveInterface<SaveHandler>(save_handler),
-        EventSetInterface<SetHandler>(set_handler) {};
+      : EventSaveInterface<SaveHandler>(save_handler),
+        EventSetInterface<SetHandler>(set_handler), _detect(detect_) {};
 
   void operator()(auto &state) {
-    constexpr bool can_save = requires { save(state); };
-    constexpr bool can_set = requires { set(state); };
+    constexpr bool can_save = !std::is_same_v<SaveHandler, std::nullptr_t>;
+    constexpr bool can_set = !std::is_same_v<SetHandler, std::nullptr_t>;
+
     if constexpr (can_save) {
-      save(state);
+      this->save(state);
     }
     if constexpr (can_set) {
-      set(state);
+      this->set(state);
       if constexpr (can_save) {
-        save(state);
+        this->save(state);
       }
     }
   }
@@ -177,15 +194,23 @@ EVENT_WITHOUT_DETECTION(StopEvent);  // Event after integration stop
 /*CallEvent(nullptr, Var(callcount)++);*/
 
 // Class that contains events that will run simultaniously
-template <typename... EventTypes>
+//
+template <template <typename...> typename EventType, typename... EventTypes>
 /*requires(is_kind_of_v<EventTypes, EventType> && ...)*/
 struct SimultaniousEvents {
   std::tuple<EventTypes...> event_tuple;
 
+  SimultaniousEvents(const SimultaniousEvents<EventType, EventTypes...> &events)
+      : event_tuple(events.event_tuple) {};
   SimultaniousEvents(const std::tuple<EventTypes...> &event_tuple_)
       : event_tuple(event_tuple_) {};
-  /*SimultaniousEvents(const EventTypes &...events_)*/
-  /*    : event_tuple(std::make_tuple(events_...)) {};*/
+  SimultaniousEvents(const EventTypes &...events_)
+      : event_tuple(std::make_tuple(events_...)) {};
+
+  template <typename... EventTypes1, typename... EventTypes2>
+  SimultaniousEvents(const SimultaniousEvents<EventType, EventTypes1...> &se1,
+                     const SimultaniousEvents<EventType, EventTypes2...> &se2)
+      : event_tuple(std::tuple_cat(se1.event_tuple, se2.event_tuple)){};
 
   // run event(state) for all events in event_tuple
   void operator()(auto &state) {
@@ -193,6 +218,34 @@ struct SimultaniousEvents {
                event_tuple);
   }
 };
+
+template <template <typename...> typename EventType, typename... EventTypes>
+SimultaniousEvents(const SimultaniousEvents<EventType, EventTypes...> &events)
+    -> SimultaniousEvents<EventType, EventTypes...>;
+
+template <template <typename...> typename EventTemplate, typename... Args,
+          typename... EventTypes>
+SimultaniousEvents(const std::tuple<EventTemplate<Args...>, EventTypes...> &)
+    -> SimultaniousEvents<EventTemplate, EventTemplate<Args...>, EventTypes...>;
+
+template <template <typename...> typename EventTemplate,
+          typename... EventTypes1, typename... EventTypes2>
+SimultaniousEvents(const SimultaniousEvents<EventTemplate, EventTypes1...> &se1,
+                   const SimultaniousEvents<EventTemplate, EventTypes2...> &se2)
+    -> SimultaniousEvents<EventTemplate, EventTypes1..., EventTypes2...>;
+/*template <template <typename...> typename EventType, typename...
+ * EventTypes1,*/
+/*          typename... EventTypes2>*/
+/*auto SimultaniousEvents(*/
+/*    const SimultaniousEvents<EventType, EventTypes1...> &se1,*/
+/*    const SimultaniousEvents<EventType, EventTypes2...> &se2) {*/
+/*  return SimultaniousEvents<EventType, EventTypes1..., EventTypes2...>(*/
+/*      std::tuple_cat(se1.event_tuple, se2.event_tuple));*/
+/*}*/
+
+// empty list
+/*SimultaniousEvents(const std::tuple<> &) ->
+   SimultaniousEvents<StopEvent>;*/
 
 template <template <typename...> typename EventType, typename... Ts>
 struct filter_events_impl {
@@ -218,10 +271,12 @@ using filter_events_t =
 
 template <template <typename...> typename EventType, typename... EventTypes>
 auto filter_simultaneous_events(const std::tuple<EventTypes...> &events) {
-  return SimultaniousEvents(filter_events<EventType, EventTypes...>(events));
-  /*return std::apply(*/
-  /*    [&](auto... args) { return SimultaniousEvents<EventType>(args...); },*/
-  /*    filter_events<EventType, EventTypes...>(events));*/
+  if constexpr (std::is_same_v<std::tuple<>,
+                               filter_events_t<EventType, EventTypes...>>) {
+    return SimultaniousEvents<EventType>(std::tuple<>());
+  } else {
+    return SimultaniousEvents(filter_events<EventType, EventTypes...>(events));
+  }
 }
 
 template <template <typename...> typename EventType, typename... EventTypes>
@@ -235,10 +290,8 @@ using filter_simultaneous_events_t =
         std::make_tuple(std::declval<EventTypes>()...)));
 
 template <typename... EventTypes> struct Events {
-private:
   size_t located_event_index = -1;
 
-public:
   filter_events_t<Event, EventTypes...> detection_events;
 
   filter_simultaneous_events_t<StepEvent, EventTypes...> step_events;
@@ -262,19 +315,11 @@ public:
   Events(Events<EventTypes1...> events1, Events<EventTypes2...> events2)
       : detection_events(
             std::tuple_cat(events1.detection_events, events2.detection_events)),
-        step_events(SimultaniousEvents(std::tuple_cat(
-            events1.step_events.event_tuple, events2.step_events.event_tuple))),
-        reject_events(SimultaniousEvents(
-            std::tuple_cat(events1.reject_events.event_tuple,
-                           events2.reject_events.event_tuple))),
-        call_events(SimultaniousEvents(std::tuple_cat(
-            events1.call_events.event_tuple, events2.call_events.event_tuple))),
-        start_events(SimultaniousEvents(
-            std::tuple_cat(events1.start_events.event_tuple,
-                           events2.start_events.event_tuple))),
-        stop_events(SimultaniousEvents(
-            std::tuple_cat(events1.stop_events.event_tuple,
-                           events2.stop_events.event_tuple))) {}
+        step_events(events1.step_events, events2.step_events),
+        reject_events(events1.reject_events, events2.reject_events),
+        call_events(events1.call_events, events2.call_events),
+        start_events(events1.start_events, events2.start_events),
+        stop_events(events1.stop_events, events2.stop_events) {}
 
   template <typename... EventTypes1, typename... EventTypes2, typename... Rest>
   Events(Events<EventTypes1...> events1, Events<EventTypes2...> events2,
@@ -282,15 +327,14 @@ public:
       : Events(Events(events1, events2), rest...) {}
 
   double locate(const auto &state) {
-    static_assert(false);
-    double event_t = std::numeric_limits<double>::max();
+    double t_event = std::numeric_limits<double>::max();
 
     [&]<std::size_t... Is>(std::index_sequence<Is...>) {
       (
-          [&state, &event_t, this](auto &&event, size_t index) {
+          [&state, &t_event, this](auto &&event, size_t index) {
             double t = event.locate(state);
-            if (t < event_t) {
-              event_t = t;
+            if (t < t_event) {
+              t_event = t;
               located_event_index = index;
             }
           }(std::get<Is>(detection_events), Is),
@@ -298,11 +342,11 @@ public:
     }(std::make_index_sequence<
         std::tuple_size_v<decltype(detection_events)>>{});
 
-    return event_t;
+    return t_event;
   }
 
   void located_event(auto &state) {
-    if (located_event_index == -1)
+    if (located_event_index == size_t(-1))
       return;
 
     [&]<std::size_t... Is>(std::index_sequence<Is...>) {
@@ -317,7 +361,28 @@ public:
     }(std::make_index_sequence<
         std::tuple_size_v<decltype(detection_events)>>{});
   }
+
+  auto get_saved() const {
+    auto get_saved_from_tuple = [](const auto &tuple_) {
+      return std::apply(
+          [](const auto &...event_tuple) {
+            return std::tuple_cat(event_tuple.saved...);
+          },
+          tuple_);
+    };
+
+    return tuple_cat(get_saved_from_tuple(detection_events),
+                     get_saved_from_tuple(step_events.event_tuple),
+                     get_saved_from_tuple(reject_events.event_tuple),
+                     get_saved_from_tuple(call_events.event_tuple),
+                     get_saved_from_tuple(start_events.event_tuple),
+                     get_saved_from_tuple(stop_events.event_tuple));
+  }
 };
+
+template <typename... EventTypes1, typename... EventTypes2>
+Events(Events<EventTypes1...> events1, Events<EventTypes2...> events2)
+    -> Events<EventTypes1..., EventTypes2...>;
 
 /*
  in solver:
