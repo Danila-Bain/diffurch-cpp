@@ -6,11 +6,13 @@
 
 using namespace std;
 
-template <size_t N>
-using Vec = typename conditional<N == 1, double, array<double, N>>::type;
+/*template <size_t N>*/
+/*using Vec = typename conditional<N == 1, double, array<double, N>>::type;*/
+/*template <size_t N>*/
+/*using VecArg = typename conditional<N == 1, Vec<1>, const Vec<N> &>::type;*/
 
-template <size_t N>
-using VecArg = typename conditional<N == 1, Vec<1>, const Vec<N> &>::type;
+template <size_t N> using Vec = array<double, N>;
+template <size_t N> using VecArg = const Vec<N> &;
 
 template <size_t N, size_t M> using VecMap = function<Vec<M>(VecArg<N>)>;
 
