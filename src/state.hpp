@@ -1,27 +1,11 @@
 #pragma once
 #include <iostream>
 
-#include "equation.hpp"
-#include "vec.hpp"
+#include "util/vec.hpp"
 #include <algorithm>
 #include <vector>
 
 namespace State {
-
-/*struct StateClassPlaceHolder {*/
-/*  double t_curr;*/
-/*  std::array<double, 0> x_curr;*/
-/*  double t_prev;*/
-/*  std::array<double, 0> x_prev;*/
-/*  template <size_t derivative_order, size_t index = -1>*/
-/*  auto eval(double t) const {*/
-/*    if constexpr (index == -1) {*/
-/*      return x_curr;*/
-/*    } else {*/
-/*      return x_curr[index];*/
-/*    }*/
-/*  }*/
-/*};*/
 
 template <typename RK, typename InitialConditionHandler> struct State {
 

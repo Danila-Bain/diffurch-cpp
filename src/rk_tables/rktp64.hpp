@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../polynomial.hpp"
+#include "../util/polynomial.hpp"
 #include <array>
 
 constexpr std::initializer_list<double> my_list = {0., 1., 2.};

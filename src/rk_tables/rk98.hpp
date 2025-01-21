@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../polynomial.hpp"
+#include "../util/polynomial.hpp"
 #include <array>
 
 struct rk98 {

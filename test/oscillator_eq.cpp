@@ -1,7 +1,7 @@
-#include "../events.hpp"
-#include "../print.hpp"
-#include "../solver.hpp"
-#include "../state_symbols.hpp"
+#include "../src/events.hpp"
+#include "../src/solver.hpp"
+#include "../src/symbolic.hpp"
+#include "../src/util/print.hpp"
 #include <iostream>
 #include <matplot/matplot.h>
 
@@ -9,9 +9,12 @@ auto t = State::TimeVariable();
 auto [x, y] = State::Variables<2>();
 
 struct HarmonicOscillator : Solver<HarmonicOscillator> {
-  double x_0, y_0;
+  double x_0 = 1.;
+  double y_0 = 0.;
 
   auto get_lhs() { return State::Vector(y, -x); }
+
+  static const bool ic_is_true_solution = true;
 
   auto get_ic() {
     return State::Vector(x_0 * cos(t) + y_0 * sin(t),

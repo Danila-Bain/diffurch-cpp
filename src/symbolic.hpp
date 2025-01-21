@@ -348,47 +348,4 @@ struct GreaterEventFunction {
 /*  return op_name(l, Constant(r)); */
 /*}*/
 
-/*template <typename T> struct sign {*/
-/*  T arg;*/
-/*  sign(T arg_) : arg(arg_) {};*/
-/**/
-/*  static auto events =*/
-/*      arg::events + Events(WhenZero(ref(arg)) |*/
-/*                           SetUp([](auto &state) { state.sign[0] = 1; }) |*/
-/*                           SetDown([](auto &state) { state.sign[0] = -1;
- * }));*/
-/**/
-/*  auto operator()(const auto &state) { return state.sign[0]; }*/
-/*};*/
-
-/*template <typename T> struct sign {*/
-/*  T arg;*/
-/*  double value = 1;*/
-/*  sign(T arg_) : arg(arg_) {};*/
-/**/
-/*  auto operator()(const auto &state) const { return value; }*/
-/**/
-/*  auto prev(const auto &state) const { return value; }*/
-/**/
-/*  void set_value(const auto &state) { value = sign(arg(state)); }*/
-/**/
-/*  void is_switching(const auto &state) { return arg() * arg.prev() < 0; }*/
-/**/
-/*  T event_function_derivative = &arg;*/
-/*};*/
-
 } // namespace State
-
-/*
-    Variable<0> x;
-    Variable<1> Dx;
-
-    LHS lhs(Dx, sign(-x));
-
-    if (lhs.is_switch_detected(state)) {
-        auto switching_part = lhs.swiching_part();
-        find
-    }
-
-
- */

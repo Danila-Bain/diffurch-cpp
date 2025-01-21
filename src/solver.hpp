@@ -1,9 +1,8 @@
-#include "equation.hpp"
 #include "events.hpp"
 #include "state.hpp"
-#include "state_symbols.hpp"
-#include "stepsize_controller.hpp"
-#include "vec.hpp"
+#include "stepsize.hpp"
+#include "symbolic.hpp"
+#include "util/vec.hpp"
 #include <boost/preprocessor.hpp>
 #include <cstddef>
 #include <limits>
@@ -21,14 +20,10 @@ using StepsizeController = ConstantStepsize;
 template <typename Equation> struct Solver {
   auto solution(double initial_time, double final_time) {
     auto self = static_cast<Equation *>(this);
-    constexpr size_t n = order_of_equation<Equation>::value;
-
     auto lhs = self->get_lhs();
     auto ic = self->get_ic();
+    static constexpr size_t n = std::tuple_size<decltype(ic(0.))>::value;
 
-    /*auto [detection_events, step_events, reject_events, call_events,*/
-    /*      start_events, stop_events] =*/
-    /*    Events(self->get_events(), lhs.get_events());*/
     auto events = Events(self->get_events(), lhs.get_events());
 
     auto stepsize_controller = StepsizeController(0.05);

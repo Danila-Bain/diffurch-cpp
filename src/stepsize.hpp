@@ -1,8 +1,5 @@
 #pragma once
 
-/*template <typename T>*/
-/*concept StepsizeControllerType = requires { false; };*/
-
 struct ConstantStepsize {
   double stepsize;
 
