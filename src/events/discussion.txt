@@ -1,0 +1,42 @@
+ Event is an object that is described by the type of detection ("when", "step",
+ "reject", "stop_integration", etc), and callbacks, that are optional,
+ can coexist and can be of the types "save" and "change". If both "save" and
+ "change" callbacks are specified, then "save" is called both before and after
+ the change. "save" evaluates and stores current state information, "change"
+ reassigns current state variables in state, it can't modify time variable or
+ past states.
+
+ What I want is to specify event detection, event save action, and event change
+ action in separate classes and then combine them like
+ ``auto event = When(x = 0 && y < 0) | Save(t) | Change( y = -y ) ``.
+ With this approach, It is easier to combine those optional save and change
+ things, and use other types of detection in place of "When". Otherwise it would
+ be something like ``auto event = Event(x = 0, t, y = -y)`` if all parts are
+ specified, and auto event = Event(x = 0, nullopt, nullopt) or something like
+ that if save and change handlers are ommited. I don't like that,
+ it is much less readable and less customizable.
+
+But I don't like this approach either, because it doesn't make sense to combine
+several detection parts, several save parts, or several change parts, because
+several when's make codimension-2 event, which do not happen generally, several
+saves are better handled trough several arguments, like Save(t, x, y, z) or
+Save(t, {x,y,z}), and the same for change --- Change(y = -y | z = 2*z);
+
+Then, it is super inconvinient to implement. So actually Event(x = 0 && y < 0,
+Save(t, x, y, z), y = -y) syntax is more desirable, the only question is how to
+sensibly delimit actual when, save, and change parts, so this is more readable.
+Just `Event(When(x = 0 && y < 0), Save(t, x, y, z), Change(y = -y))`? Maybe in
+this case it is sufficient to have positional arguments, maybe with defaults,
+because there are only 3 arguments
+
+Event(x == 0 && y < 0, {t, x, y, z}, y = -y && z = -z)
+
+Event(x == 0 && y < 0, All, None)
+
+StepEvent(All, [&stepcount](){stepcount++;})
+StepRejectedEvent(Vec(t, stepsize, error))
+Event(x == 0, {All, x[t-1]}, StopIntegration)
+StopEvent(t)
+
+
+
