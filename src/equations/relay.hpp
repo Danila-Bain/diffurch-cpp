@@ -41,7 +41,7 @@ struct Relay2 : Solver<Relay2> {
   auto get_lhs() { return State::Vector(Dx, -sign(x)); }
   auto get_ic() {
     return Periodic(-0.5 * T, 0.5 * T,
-                    Piecwise(t < 0,
+                    Piecwise(t < 0.,
                              Vector(0.5 * t * (T * 0.5 + t), 0.25 * T + t),
                              Vector(0.5 * t * (T * 0.5 - t), 0.25 * T - t)));
   }

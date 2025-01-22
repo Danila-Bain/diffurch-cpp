@@ -1,0 +1,63 @@
+syntax:
+  delay:
+    x(t-1)
+      most obvious thing in the universe
+    x[t-1]
+      like in mathematica but in c++ can be confused with indexing
+      may be this syntax is to be reserved for syntax only, it may be 
+      useful in the future for PDEs
+  derivative:
+    D(x)(t-1)
+    x.derivative(t-1)
+    x.d(t-1)
+      x.d<2>(t-1)
+    (x^1)(t-1)
+      (x^2)(t-1)
+      can be misleading, confused with power operator
+
+  vector:
+    State::Vector(x, y, z)
+    x | y | z 
+      "|" has low precedence, so no parentheses are ever needed, but
+      (x | y | z) looks good also
+
+  events:
+      detection and location:
+          x == 0 for zero crossing
+          x != 0 for downward zero crossing
+          x <=> 0 for upward zero crossing
+      conditions:
+          y < 0 for detecting only for negative y
+          y <= 0 for locating only for negative y (this is more inclusive)
+
+
+      detection + conditions:
+          x == 0 && y < 0 && z > x
+      save
+          make_tuple(t, x, y, z)
+          t | x | y | z
+             makes array
+          t & x & y & z
+             makes tuple
+      set
+          (x = x + 1) && (y = y - x) && (z += 1.) && w++;
+             parentheses are required because operator "=" has lowest precedence
+          x->(x + 1) && y->(x - 1)
+             parentheses are required because -> has highest precedence order
+          x << x + 1 && y << x - 1
+             parentheses are not required because operator << has lower precedence 
+             than other arithmetic operators, but higher precedence than logical operators
+
+When should additional conditions for events be checked?
+  1. After event location
+    This approach ensures that no events are missed, 
+    but introducess many extra event location procedures.
+    This overhead may not be that bad, since even without restrictions
+    events are supposed to be relatively rare with respect to other integration steps.
+  2. Before event location, at detection stage.
+    This way no extra location procedures are executed, but in some edge cases
+    events can be missed, i.e when for t_curr and t_prev condition
+    is not met, but somewhere in between it does, meanwhile condition 
+
+
+          
