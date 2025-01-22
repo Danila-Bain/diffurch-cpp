@@ -16,7 +16,7 @@ struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
 
   auto get_lhs() {
     return State::Vector(k * (1 - theta) * x +
-                         (k * exp(tau) * theta) * x[t - tau]);
+                         (k * exp(tau) * theta) * x(t - tau));
   }
   auto get_ic() { return State::Vector(exp(k * t)); }
 
@@ -38,7 +38,7 @@ struct LinearDDE1Sin : Solver<LinearDDE1Sin> {
   auto get_lhs() {
     double a = k / tan(k * tau);
     double b = -k / sin(k * tau);
-    return State::Vector(a * x + b * x[t - tau]);
+    return State::Vector(a * x + b * x(t - tau));
   }
   auto get_ic() { return State::Vector(sin(k * t)); }
 
@@ -64,7 +64,7 @@ struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
     double a = -k * k * (1 - theta);
     double b = -theta * k * k * cos(k * tau);
     double c = -theta * k * sin(k * tau);
-    return State::Vector(Dx, a * x + b * x[t - tau] + c * Dx[t - tau]);
+    return State::Vector(Dx, a * x + b * x(t - tau) + c * Dx(t - tau));
   }
   auto get_ic() { return State::Vector(sin(k * t)); }
 
