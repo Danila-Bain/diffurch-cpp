@@ -16,16 +16,18 @@
 // that inherit solver with themselves.
 template <typename Equation> struct Solver {
 
-  template <typename RK = rk98, typename StepsizeController = ConstantStepsize>
-  auto solution(double initial_time, double final_time) {
+  template <typename RK = rk98>
+  auto
+  solution(double initial_time, double final_time,
+           auto stepsize_controller = ConstantStepsize(0.1),
+           auto additional_events = Events(StepEvent(SaveAll<Equation>()))) {
     auto self = static_cast<Equation *>(this);
     auto lhs = self->get_lhs();
     auto ic = self->get_ic();
     static constexpr size_t n = std::tuple_size<decltype(ic(0.))>::value;
 
-    auto events = Events(self->get_events(), lhs.get_events());
-
-    auto stepsize_controller = StepsizeController(0.05);
+    auto events =
+        Events(self->get_events(), lhs.get_events(), additional_events);
 
     double stepsize = stepsize_controller.initial_stepsize();
 
