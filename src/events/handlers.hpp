@@ -17,7 +17,7 @@ struct StopIntegration {
 // Intended to be part of default event for solver
 template <typename Equation> auto SaveAll() {
   static constexpr size_t n =
-      std::tuple_size<decltype(std::declval<Equation>.get_ic()(0.))>::value;
+      std::tuple_size<decltype(std::declval<Equation>().get_ic()(0.))>::value;
 
   return std::tuple_cat(std::make_tuple(State::TimeVariable()),
                         State::Variables<n>());

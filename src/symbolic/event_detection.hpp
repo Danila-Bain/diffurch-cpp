@@ -89,7 +89,7 @@ struct StateEventWithLocationCondition : StateEventExpression {
       return std::numeric_limits<double>::max();
 
     double t =
-        root_by_bisection([this, &state](double t) { return arg(state, t); },
+        root_by_bisection([this, &state](double t_) { return arg(state, t_); },
                           state.t_prev, state.t_curr);
     if (!condition(state, t))
       return std::numeric_limits<double>::max();

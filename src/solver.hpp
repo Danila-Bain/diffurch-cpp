@@ -1,4 +1,5 @@
 #include "events.hpp"
+#include "events/handlers.hpp"
 #include "state.hpp"
 #include "stepsize.hpp"
 #include "symbolic.hpp"
@@ -16,18 +17,29 @@
 // that inherit solver with themselves.
 template <typename Equation> struct Solver {
 
-  template <typename RK = rk98>
+  auto get_events() { return Events(); }
+
+  template <typename RK = rk98, typename StepsizeControllerT = ConstantStepsize>
   auto
   solution(double initial_time, double final_time,
-           auto stepsize_controller = ConstantStepsize(0.1),
-           auto additional_events = Events(StepEvent(SaveAll<Equation>()))) {
+           StepsizeControllerT stepsize_controller = ConstantStepsize(0.1)) {
+
+    return solution<RK>(initial_time, final_time, stepsize_controller,
+                        Events(StepEvent(SaveAll<Equation>())));
+  }
+
+  template <typename RK = rk98, typename StepsizeControllerT,
+            typename AdditionalEventsT>
+  auto solution(double initial_time, double final_time,
+                StepsizeControllerT stepsize_controller,
+                AdditionalEventsT additional_events) {
     auto self = static_cast<Equation *>(this);
     auto lhs = self->get_lhs();
     auto ic = self->get_ic();
     static constexpr size_t n = std::tuple_size<decltype(ic(0.))>::value;
 
     auto events =
-        Events(self->get_events(), lhs.get_events(), additional_events);
+        Events(Events(self->get_events(), lhs.get_events()), additional_events);
 
     double stepsize = stepsize_controller.initial_stepsize();
 
@@ -54,6 +66,7 @@ template <typename Equation> struct Solver {
     };
 
     events.start_events(state);
+    events.step_events(state);
 
     while (state.t_curr < final_time) {
 

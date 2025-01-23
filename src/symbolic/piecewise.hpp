@@ -4,42 +4,44 @@
 
 namespace State {
 
-template <IsStateExpression Arg> struct Function_sign : StateExpression {
-  Arg arg;
-  Function_sign(Arg arg_) : arg(arg_) {}
-  double value;
-  auto operator()(const auto &state) const { return value; }
-  auto operator()(const auto &state, double t) const {
-    return sign(arg(state, t));
-  }
-  auto operator()(double t) const { return sign(arg(t)); }
-  auto prev(const auto &state) const { return value; }
-
-  auto get_events() const {
-    return Events(
-        arg.get_events(),
-        StartEvent(nullptr,
-                   [this](const auto &state) { value = sign(arg(state)); }),
-        Event(arg == 0, nullptr, [this](auto &state) { value = -value; }));
-  }
-};
-template <IsStateExpression Arg> auto sign(Arg arg) {
-  return Function_sign(arg);
-}
-
-template <IsStateExpression Arg> struct Function_abs : StateExpression {
-  Arg arg;
-  Function_abs(Arg arg_) : arg(arg_) {}
-  auto operator()(const auto &state) const { return abs(arg(state)); }
-  auto operator()(const auto &state, double t) const {
-    return abs(arg(state, t));
-  }
-  auto operator()(double t) const { return abs(arg(t)); }
-  auto prev(const auto &state) const { return abs(arg.prev(state)); }
-
-  auto get_events() const { return Events(arg.get_events(), Event(arg == 0)); }
-};
-template <IsStateExpression Arg> auto abs(Arg arg) { return Function_abs(arg); }
+/*template <IsStateExpression Arg> struct Function_sign : StateExpression {*/
+/*  Arg arg;*/
+/*  Function_sign(Arg arg_) : arg(arg_) {}*/
+/*  double value;*/
+/*  auto operator()(const auto &state) const { return value; }*/
+/*  auto operator()(const auto &state, double t) const {*/
+/*    return sign(arg(state, t));*/
+/*  }*/
+/*  auto operator()(double t) const { return sign(arg(t)); }*/
+/*  auto prev(const auto &state) const { return value; }*/
+/**/
+/*  auto get_events() const {*/
+/*    return Events(*/
+/*        arg.get_events(),*/
+/*        StartEvent(nullptr,*/
+/*                   [this](const auto &state) { value = sign(arg(state)); }),*/
+/*        Event(arg == 0, nullptr, [this](auto &state) { value = -value; }));*/
+/*  }*/
+/*};*/
+/*template <IsStateExpression Arg> auto sign(Arg arg) {*/
+/*  return Function_sign(arg);*/
+/*}*/
+/**/
+/*template <IsStateExpression Arg> struct Function_abs : StateExpression {*/
+/*  Arg arg;*/
+/*  Function_abs(Arg arg_) : arg(arg_) {}*/
+/*  auto operator()(const auto &state) const { return abs(arg(state)); }*/
+/*  auto operator()(const auto &state, double t) const {*/
+/*    return abs(arg(state, t));*/
+/*  }*/
+/*  auto operator()(double t) const { return abs(arg(t)); }*/
+/*  auto prev(const auto &state) const { return abs(arg.prev(state)); }*/
+/**/
+/*  auto get_events() const { return Events(arg.get_events(), Event(arg == 0));
+ * }*/
+/*};*/
+/*template <IsStateExpression Arg> auto abs(Arg arg) { return Function_abs(arg);
+ * }*/
 
 /*template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,*/
 /*          IsStateExpression ExprIfFalse>*/

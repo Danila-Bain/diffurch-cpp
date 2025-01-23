@@ -18,6 +18,7 @@ template <IsNotStateExpression T = double> struct Constant : StateExpression {
     return value;
   }
   T operator()([[maybe_unused]] double t) const { return value; }
+  static auto get_events() { return Events(); }
 };
 
 struct TimeVariable : StateExpression {

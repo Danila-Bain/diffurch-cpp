@@ -7,3 +7,4 @@
 #include "symbolic/piecewise.hpp"
 #include "symbolic/variables.hpp"
 #include "symbolic/variables_presets.hpp"
+#include "symbolic/vector.hpp"
