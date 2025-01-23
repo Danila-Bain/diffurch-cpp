@@ -63,7 +63,8 @@ template <typename Equation> struct Solver {
       // Runge-Kutta step
       runge_kutta_step();
       // stepsize for the next step, even if this step is rejected
-      stepsize = stepsize_controller.update_stepsize(stepsize, error);
+      stepsize = min(final_time - state.t_curr, // unsafe??
+                     stepsize_controller.update_stepsize(stepsize, error));
 
       if (stepsize_controller.reject_step(error)) {
         events.reject_events(state);
