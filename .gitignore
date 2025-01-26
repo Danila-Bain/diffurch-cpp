@@ -1,3 +1,8 @@
+# CMake stuff
+.cache*
+out/*
+compile_commands.json
+
 # Prerequisites
 *.d
 

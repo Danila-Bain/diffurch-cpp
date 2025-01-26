@@ -1,3 +1,5 @@
+#pragma once
+
 #include "events.hpp"
 #include "events/handlers.hpp"
 #include "state.hpp"

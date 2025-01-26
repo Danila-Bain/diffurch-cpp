@@ -3,23 +3,26 @@
 #include "../solver.hpp"
 #include <algorithm>
 
-template <typename RK = rk98>
-auto GlobalErrorVsConstantStepsize(auto equation, double initial_time,
-                                   double final_time,
-                                   std::vector<double> stepsizes) {
+#include "../util/print.hpp"
+#include <iostream>
 
-  std::vector<double> stepsize_controllers(stepsizes.size());
+template <typename RK = rk98>
+std::vector<double> global_error(auto equation, double initial_time,
+                                 double final_time,
+                                 const std::vector<double> &stepsizes) {
+
+  vector<ConstantStepsize> stepsize_controllers(stepsizes.size());
   std::transform(stepsizes.begin(), stepsizes.end(),
                  stepsize_controllers.begin(),
                  [](double stepsize) { return ConstantStepsize(stepsize); });
-  return GlobalErrorVsConstantStepsize<RK>(equation, initial_time, final_time,
-                                           stepsize_controllers);
+  return global_error<RK>(equation, initial_time, final_time,
+                          stepsize_controllers);
 }
 
 template <typename RK = rk98, typename StepsizeController>
-auto GlobalErrorVsConstantStepsize(
-    auto equation, double initial_time, double final_time,
-    std::vector<StepsizeController> stepsize_controllers) {
+std::vector<double>
+global_error(auto equation, double initial_time, double final_time,
+             const std::vector<StepsizeController> &stepsize_controllers) {
 
   static_assert(
       requires { equation.ic_is_true_solution; } &&
@@ -31,6 +34,8 @@ auto GlobalErrorVsConstantStepsize(
   static constexpr size_t n =
       std::tuple_size<decltype(true_solution(0.))>::value;
 
+  std::array<double, n> true_x = true_solution(final_time);
+  /*cout << true_solution(t) << endl;*/
   std::vector<double> error(stepsize_controllers.size());
   std::transform(stepsize_controllers.begin(), stepsize_controllers.end(),
                  error.begin(), [&](StepsizeController stepsize_controller) {
@@ -39,15 +44,14 @@ auto GlobalErrorVsConstantStepsize(
                        Events(StopEvent(SaveAll<decltype(equation)>())));
                    double t;
                    std::array<double, n> x;
-
                    std::apply(
                        [&](auto t_, auto... x_i) {
                          t = t_[0];
-                         x = std::array({x_i[0]...});
+                         x = std::array<double, sizeof...(x_i)>({x_i[0]...});
                        },
                        res);
 
-                   auto true_x = true_solution(t);
+                   cout << res << endl;
                    return norm(x - true_x);
                  });
   return error;

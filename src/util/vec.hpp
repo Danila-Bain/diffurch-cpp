@@ -127,3 +127,53 @@ template <size_t n, typename T> inline double norm(const array<T, n> &v) {
 }
 
 inline double norm(double v) { return abs(v); }
+
+std::vector<double> linspace(auto start_in, auto end_in, int num_in) {
+  std::vector<double> result(num_in);
+
+  double start = static_cast<double>(start_in);
+  double end = static_cast<double>(end_in);
+  double num = static_cast<double>(num_in);
+
+  if (num == 0) {
+    return result;
+  }
+  if (num == 1) {
+    result[0] = start;
+    return result;
+  }
+
+  double delta = (end - start);
+
+  for (int i = 0; i < num - 1; ++i) {
+    result[i] = start + delta * i / (num - 1);
+  }
+  result[num - 1] = end; // I want to ensure that start and end
+                         // are exactly the same as the input
+  return result;
+}
+
+std::vector<double> logspace(auto start_in, auto end_in, int num_in) {
+  std::vector<double> result(num_in);
+
+  double start = static_cast<double>(start_in);
+  double end = static_cast<double>(end_in);
+  double num = static_cast<double>(num_in);
+
+  if (num == 0) {
+    return result;
+  }
+  if (num == 1) {
+    result[0] = start;
+    return result;
+  }
+
+  double delta = log(end / start) / (num - 1);
+
+  for (int i = 0; i < num - 1; ++i) {
+    result[i] = start * exp(i * delta);
+  }
+  result[num - 1] = end; // I want to ensure that start and end
+                         // are exactly the same as the input
+  return result;
+}

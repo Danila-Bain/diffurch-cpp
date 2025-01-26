@@ -3,7 +3,7 @@
 struct ConstantStepsize {
   double stepsize;
 
-  ConstantStepsize(double ss) : stepsize(ss) {};
+  ConstantStepsize(double ss = 0.05) : stepsize(ss) {};
 
   double initial_stepsize() { return stepsize; }
 
