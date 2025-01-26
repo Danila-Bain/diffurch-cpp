@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct Lorenz : Solver<Lorenz> {
 
   double sigma, rho, beta;
@@ -21,3 +22,4 @@ struct Lorenz : Solver<Lorenz> {
 
   auto get_events() { return Events(StepEvent(std::make_tuple(t, x, y, z))); }
 };
+} // namespace Equation

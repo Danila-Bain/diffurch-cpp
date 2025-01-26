@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
 
   double theta; // 0 -> without delay, 1 -> only delay
@@ -20,7 +21,7 @@ struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
   }
   auto get_ic() { return State::Vector(exp(k * t)); }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
 
 struct LinearDDE1Sin : Solver<LinearDDE1Sin> {
@@ -42,7 +43,7 @@ struct LinearDDE1Sin : Solver<LinearDDE1Sin> {
   }
   auto get_ic() { return State::Vector(sin(k * t)); }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
 
 struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
@@ -68,5 +69,6 @@ struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
   }
   auto get_ic() { return State::Vector(sin(k * t)); }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
+} // namespace Equation

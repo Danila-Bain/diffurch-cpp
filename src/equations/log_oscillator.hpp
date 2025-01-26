@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct LogOscillator : Solver<LogOscillator> {
 
   double w;
@@ -19,5 +20,6 @@ struct LogOscillator : Solver<LogOscillator> {
     return State::Vector(exp(sin(w * t)), w * cos(w * t) * exp(sin(w * t)));
   }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
 };
+} // namespace Equation

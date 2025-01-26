@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct Linear1 : Solver<Linear1> {
 
   double k;
@@ -14,5 +15,6 @@ struct Linear1 : Solver<Linear1> {
   auto get_lhs() { return State::Vector(k * x); }
   auto get_ic() { return State::Vector(exp(k * t)); }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
+} // namespace Equation

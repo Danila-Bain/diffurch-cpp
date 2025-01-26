@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct Relay1 : Solver<Relay1> {
 
   double a;
@@ -48,3 +49,4 @@ struct Relay2 : Solver<Relay2> {
 
   auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }
 };
+} // namespace Equation

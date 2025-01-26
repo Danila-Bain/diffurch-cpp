@@ -1,5 +1,6 @@
+#pragma once
 #include "../solver.hpp"
-
+namespace Equation {
 struct RelayDDE1 : Solver<RelayDDE1> {
 
   double alpha; // sign coeff
@@ -34,3 +35,4 @@ struct RelayDDE1 : Solver<RelayDDE1> {
 
   auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
 };
+} // namespace Equation

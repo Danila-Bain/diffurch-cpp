@@ -1,4 +1,8 @@
+#pragma once
+
 #include "../solver.hpp"
+
+namespace Equation {
 
 struct HarmonicOscillator : Solver<HarmonicOscillator> {
 
@@ -20,3 +24,4 @@ struct HarmonicOscillator : Solver<HarmonicOscillator> {
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
   /*auto get_events() { return Events(StepEvent(t | x | Dx)); }*/
 };
+} // namespace Equation
