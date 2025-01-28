@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 
@@ -29,14 +30,14 @@ public:
 
   // performance can be improved:
   // derivative coefficeients can be precalculated
-  template <int order = 0> constexpr double eval(double theta) const {
+  template <size_t order = 0> constexpr double eval(double theta) const {
     if constexpr (order > degree) {
       return 0;
     }
     const static std::array<double, degree - order + 1> d_coefs =
         derivative_coefficients<order, degree>();
     double res = coefs[degree] * d_coefs[degree - order];
-    for (int j = degree - 1; j >= order; j--) {
+    for (int j = degree - 1; j >= static_cast<int>(order); j--) {
       res *= theta;
       res += coefs[j] * d_coefs[j - order];
     }
@@ -49,3 +50,13 @@ public:
     return res;
   }
 };
+
+template <size_t order = 0, size_t n, size_t k>
+std::array<double, n> eval_array(const std::array<Polynomial<k>, n> &arr,
+                                 double theta) {
+  std::array<double, n> result;
+  std::transform(arr.begin(), arr.end(), result.begin(), [&theta](auto poly) {
+    return poly.template eval<order>(theta);
+  });
+  return result;
+}

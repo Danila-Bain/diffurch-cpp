@@ -42,8 +42,7 @@ template <typename RK, typename InitialConditionHandler> struct State {
     /*std::cout << x_sequence << std::endl << std::endl;*/
   }
 
-  template <size_t derivative_order = 0, size_t index = -1>
-  auto eval(double t) {
+  template <size_t derivative_order = 0> auto eval(double t) const {
     if (t <= t_sequence[0]) { // initial_condition case
       // here we separate two cases, because it is rare that we need to define
       // the derivative of the initial condition, in which case
@@ -61,16 +60,11 @@ template <typename RK, typename InitialConditionHandler> struct State {
       double h = t_sequence[i] - t_sequence[i - 1];
       double theta = (t - t_sequence[i - 1]) / h;
 
-      static_assert(
-          requires {
-            RK::template eval<derivative_order>(K_sequence[i - 1], theta);
-          }, "Chosen Runge-Kutta method doesn't support interpolation.");
-
-      if constexpr (index == -1)
-        return RK::template eval<derivative_order>(K_sequence[i - 1], theta);
-      else
-        return RK::template eval<derivative_order>(K_sequence[i - 1][index],
-                                                   theta);
+      auto result = h * dot(eval_array<derivative_order>(RK::bs, theta),
+                            K_sequence[i - 1], RK::s);
+      if constexpr (derivative_order == 0)
+        result = result + x_sequence[i - 1];
+      return result;
     }
   }
 };
