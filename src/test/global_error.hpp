@@ -51,8 +51,8 @@ global_error(auto equation, double initial_time, double final_time,
                        },
                        res);
 
-                   cout << res << endl;
-                   return norm(x - true_x);
+                   /*cout << res << endl;*/
+                   return norm(x - true_x) / (1 + norm(true_x));
                  });
   return error;
 }

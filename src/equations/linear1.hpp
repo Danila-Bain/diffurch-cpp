@@ -15,6 +15,13 @@ struct Linear1 : Solver<Linear1> {
   auto get_lhs() { return State::Vector(k * x); }
   auto get_ic() { return State::Vector(exp(k * t)); }
 
+  std::string repr(bool latex = true) {
+    std::string kk = (k == 1 ? "" : k == -1 ? "-" : std::format("{:.3g}", k));
+    if (latex)
+      return "$\\dot x = " + kk + " x$";
+    else
+      return "x' = " + kk + "x";
+  }
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
 } // namespace Equation

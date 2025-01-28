@@ -36,18 +36,31 @@ struct VariableAt : StateExpression {
   Arg arg;
   VariableAt(Arg arg_) : arg(arg_) {}
   auto operator()(const auto &state) const {
-    return state.template eval<derivative, coordinate>(arg(state));
+    return state.template eval<derivative>(arg(state))[coordinate];
   }
   auto prev(const auto &state) const {
-    return state.template eval<derivative, coordinate>(arg.prev(state));
+    return state.template eval<derivative>(arg.prev(state))[coordinate];
   }
   auto operator()(const auto &state, double t) const {
-    return state.template eval<derivative, coordinate>(arg(state, t));
+    return state.template eval<derivative>(arg(state, t))[coordinate];
   }
   auto get_events() const { return arg.get_events(); }
 };
 
-template <size_t coordinate = -1> struct Variable : StateExpression {
+template <size_t coordinate = -1, size_t derivative = 0>
+struct Variable : StateExpression {
+  static auto operator()(const IsNotStateExpression auto &state, double t) {
+    return state.template eval<derivative>(t)[coordinate];
+  }
+
+  template <IsStateExpression Arg> static auto operator()(Arg arg) {
+    return VariableAt<coordinate, Arg, derivative>(arg);
+  }
+
+  static auto get_events() { return Events(); }
+};
+
+template <size_t coordinate> struct Variable<coordinate, 0> : StateExpression {
   static constexpr auto operator()(const IsNotStateExpression auto &state) {
     if constexpr (coordinate == -1)
       return state.x_curr;
@@ -61,7 +74,7 @@ template <size_t coordinate = -1> struct Variable : StateExpression {
       return state.x_prev[coordinate];
   }
   static auto operator()(const IsNotStateExpression auto &state, double t) {
-    return state.template eval<0, coordinate>(t);
+    return state.template eval<0>(t)[coordinate];
   }
 
   template <IsStateExpression Arg> static auto operator()(Arg arg) {
@@ -71,9 +84,10 @@ template <size_t coordinate = -1> struct Variable : StateExpression {
   static auto get_events() { return Events(); }
 };
 
-template <size_t derivative = 1, size_t coordinate = -1>
-constexpr auto D(const Variable<coordinate> &var) {
-  return VariableAt<coordinate, TimeVariable, derivative>(TimeVariable());
+template <size_t derivative = 1, size_t var_coordinate = -1,
+          size_t var_derivative = 0>
+constexpr auto D(const Variable<var_coordinate, var_derivative> &var) {
+  return Variable<var_coordinate, var_derivative + derivative>();
 }
 
 template <size_t N, size_t from = 0, size_t to = N> constexpr auto Variables() {

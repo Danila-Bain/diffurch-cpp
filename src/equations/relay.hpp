@@ -47,6 +47,6 @@ struct Relay2 : Solver<Relay2> {
                              Vector(0.5 * t * (T * 0.5 - t), 0.25 * T - t)));
   }
 
-  auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }
+  /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
 };
 } // namespace Equation

@@ -19,6 +19,13 @@ struct HarmonicOscillator : Solver<HarmonicOscillator> {
   auto get_lhs() { return Dx | -w * w * x; }
   auto get_ic() { return sin(w * t) | w * cos(w * t); }
 
+  std::string repr(bool latex = true) {
+    std::string w2 = (w * w == 1 ? "" : std::format("{:.3g}", w * w));
+    if (latex)
+      return "$\\ddot x = " + w2 + " x$";
+    else
+      return "x'' = " + w2 + "x";
+  }
   /*auto get_lhs() { return State::Vector(Dx, -w * w * x); }*/
   /*auto get_ic() { return State::Vector(sin(w * t), w * cos(w * t)); }*/
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
