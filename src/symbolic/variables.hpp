@@ -21,6 +21,15 @@ template <IsNotStateExpression T = double> struct Constant : StateExpression {
   static auto get_events() { return Events(); }
 };
 
+template <size_t derivative = 1, IsNotStateExpression T = double>
+constexpr auto D(const Constant<T> &c) {
+  if constexpr (derivative == 0) {
+    return c;
+  } else {
+    return Constant(0.);
+  }
+}
+
 struct TimeVariable : StateExpression {
   static auto operator()(const auto &state) { return state.t_curr; }
   static auto prev(const auto &state) { return state.t_prev; }
@@ -30,6 +39,16 @@ struct TimeVariable : StateExpression {
   static auto operator()(double t) { return t; }
   static auto get_events() { return Events(); }
 };
+
+template <size_t derivative = 1> constexpr auto D(const TimeVariable &t) {
+  if constexpr (derivative == 0) {
+    return t;
+  } else if constexpr (derivative == 1) {
+    return Constant(1.);
+  } else {
+    return Constant(0.);
+  }
+}
 
 template <size_t coordinate, IsStateExpression Arg, size_t derivative = 0>
 struct VariableAt : StateExpression {
@@ -46,6 +65,19 @@ struct VariableAt : StateExpression {
   }
   auto get_events() const { return arg.get_events(); }
 };
+
+template <size_t derivative = 1, size_t var_coordinate = -1,
+          IsStateExpression VarArg = TimeVariable, size_t var_derivative = 0>
+constexpr auto
+D(const VariableAt<var_coordinate, VarArg, var_derivative> &var_at) {
+  if constexpr (derivative == 0) {
+    return var_at;
+  } else {
+    return D<derivative - 1>(
+        Variable<var_coordinate, var_derivative + 1>(var_at.arg) *
+        D(var_at.arg));
+  }
+}
 
 template <size_t coordinate = -1, size_t derivative = 0>
 struct Variable : StateExpression {

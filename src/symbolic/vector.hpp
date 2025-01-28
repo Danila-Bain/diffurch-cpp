@@ -6,7 +6,7 @@
 
 namespace State {
 
-template <typename... Coordinates> struct Vector : StateExpression {
+template <IsStateExpression... Coordinates> struct Vector : StateExpression {
   std::tuple<Coordinates...> coordinates;
 
   Vector(Coordinates... coordinates_)
@@ -52,6 +52,17 @@ template <IsStateExpression L, IsStateExpression R> auto operator|(L l, R r) {
 template <IsStateExpression... L, IsStateExpression R>
 auto operator|(Vector<L...> l, R r) {
   return Vector(std::tuple_cat(l.coordinates, std::make_tuple(r)));
+}
+
+template <size_t derivative = 1, IsStateExpression... Coordinates>
+constexpr auto D(const Vector<Coordinates...> &vector) {
+  if constexpr (derivative == 0) {
+    return vector;
+  } else {
+    return std::apply(
+        [&](const auto &...coordinates) { return Vector(D(coordinates)...); },
+        vector.coordinates);
+  }
 }
 
 /*template <IsStateExpression L, IsStateExpression R> auto operator&(L l, R r)

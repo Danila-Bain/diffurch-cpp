@@ -43,6 +43,31 @@ STATE_OPERATOR_OVERLOAD(-, Sub, StateExpression);
 STATE_OPERATOR_OVERLOAD(*, Mul, StateExpression);
 STATE_OPERATOR_OVERLOAD(/, Div, StateExpression);
 
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Add<L, R> &add) {
+  return D<derivative>(add.l) + D<derivative>(add.r);
+}
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Sub<L, R> &sub) {
+  return D<derivative>(sub.l) - D<derivative>(sub.r);
+}
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Mul<L, R> &mul) {
+  if constexpr (derivative == 0)
+    return mul;
+  else
+    return D<derivative - 1>(D(mul.l) * mul.r + mul.l * D(mul.r));
+}
+
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Div<L, R> &div) {
+  if constexpr (derivative == 0)
+    return div;
+  else
+    return D<derivative - 1>((D(div.l) * div.r - div.l * D(div.r)) /
+                             (div.r * div.r));
+}
+
 STATE_OPERATOR_OVERLOAD(<, Less, StateBoolExpression);
 STATE_OPERATOR_OVERLOAD(>, Greater, StateBoolExpression);
 STATE_OPERATOR_OVERLOAD(<=, LessEq, StateBoolExpression);
@@ -65,6 +90,11 @@ STATE_OPERATOR_OVERLOAD(>=, GreaterEq, StateBoolExpression);
   }
 
 STATE_UNARY_OPERATOR_OVERLOAD(-, Neg);
-STATE_UNARY_OPERATOR_OVERLOAD(+, UnaryPlus);
+
+template <IsStateExpression Arg> auto operator+(Arg arg) { return arg; }
+template <size_t derivative = 1, IsStateExpression Arg>
+constexpr auto D(const Neg<Arg> &neg) {
+  return -D<derivative>(neg.arg);
+}
 
 } // namespace State
