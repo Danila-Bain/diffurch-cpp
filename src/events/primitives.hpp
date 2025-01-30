@@ -11,7 +11,9 @@ public:
   EventSaveInterface(SaveHandler save_handler_)
       : save_handler(save_handler_) {};
   std::tuple<std::vector<double>> saved;
-  void save(const auto &state) { std::get<0>(saved).push_back(to_save(state)); }
+  void save(const auto &state) {
+    std::get<0>(saved).push_back(save_handler(state));
+  }
 };
 
 template <> struct EventSaveInterface<std::nullptr_t> {

@@ -19,6 +19,8 @@ template <size_t N, size_t M> using VecMap = function<Vec<M>(VecArg<N>)>;
 template <size_t N1, size_t N2, size_t M>
 using VecMap2 = function<Vec<M>(VecArg<N1>, VecArg<N2>)>;
 
+namespace std {
+
 template <typename T, std::size_t N>
 std::array<T, N> operator+(const std::array<T, N> &lhs,
                            const std::array<T, N> &rhs) {
@@ -81,6 +83,7 @@ T operator*(const std::array<T, N> &lhs, const std::array<T, N> &rhs) {
   }
   return result;
 }
+} // namespace std
 
 template <typename ContainerL, typename ContainerR>
 decltype(ContainerL{}[0] * ContainerR{}[0])

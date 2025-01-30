@@ -1,7 +1,9 @@
 #pragma once
+#include "util/vec.hpp"
 #include <iostream>
 
-#include "util/vec.hpp"
+#include "symbolic.hpp"
+#include "symbolic/expression.hpp"
 #include <algorithm>
 #include <vector>
 
@@ -50,8 +52,12 @@ template <typename RK, typename InitialConditionHandler> struct State {
       // function.
       if constexpr (derivative_order == 0)
         return ic(t);
-      else
-        return ic<derivative_order>(t);
+      else if constexpr (IsStateExpression<decltype(ic)>) {
+        static const auto ic_derivative = D<derivative_order>(ic);
+        return ic_derivative(t);
+      } else { // fallback for non-symbolic initial condition functions
+        return ic.template eval<derivative_order>(t);
+      }
     } else {
       // t_sequence[i] would be the first element > t
       int i = std::distance(
@@ -59,11 +65,15 @@ template <typename RK, typename InitialConditionHandler> struct State {
           std::upper_bound(t_sequence.begin(), t_sequence.end(), t));
       double h = t_sequence[i] - t_sequence[i - 1];
       double theta = (t - t_sequence[i - 1]) / h;
-
-      auto result = h * dot(eval_array<derivative_order>(RK::bs, theta),
-                            K_sequence[i - 1], RK::s);
+      /**/
+      /*auto result = h * dot(eval_array<derivative_order>(RK::bs, theta),*/
+      /*                      K_sequence[i - 1], RK::s);*/
+      auto result = dot(eval_array<derivative_order>(RK::bs, theta),
+                        K_sequence[i - 1], RK::s);
       if constexpr (derivative_order == 0)
-        result = result + x_sequence[i - 1];
+        result = x_sequence[i - 1] + h * result;
+      else
+        result = pow(h, 1 - derivative_order) * result;
       return result;
     }
   }

@@ -3,10 +3,10 @@ project(DiffurchTests)
 set(CMAKE_CXX_STANDARD 23)
 
 
-# set(SOURCES, 
-#   test/global_error.cpp,
-#   test/state_symbols.cpp
-# )
+set(SOURCES
+  test/ndde_plot.cpp
+  test/global_error.cpp
+)
 
 execute_process(
     COMMAND python3 -c "import sysconfig; print(sysconfig.get_path('include'))"
@@ -30,11 +30,15 @@ execute_process(
 #     add_executable(${EXE_NAME} ${SOURCE})
 # endforeach()
 
+foreach(SOURCE IN LISTS SOURCES)
+    # Extract file name without extension to use as the executable name
+    get_filename_component(EXE_NAME ${SOURCE} NAME_WE)
+    add_executable(${EXE_NAME} ${SOURCE})
+    message(STATUS ${EXE_NAME})
+    target_include_directories(${EXE_NAME} PRIVATE ${PYTHON_INCLUDE_PATH} ${PYTHON_NUMPY_INCLUDE_PATH})
+    target_link_libraries(${EXE_NAME} PRIVATE ${PYTHON_LIBRARY_PATH})
+endforeach()
 
-add_executable(my_program test/global_error.cpp)
-target_include_directories(my_program PRIVATE ${PYTHON_INCLUDE_PATH} ${PYTHON_NUMPY_INCLUDE_PATH})
-
-target_link_libraries(my_program PRIVATE ${PYTHON_LIBRARY_PATH})
 
 
 

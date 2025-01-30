@@ -40,8 +40,9 @@ STATE_FUNCTION_OVERLOAD(tan, [](const auto &x) { return pow(cos(x), -2); });
 STATE_FUNCTION_OVERLOAD(exp, exp);
 STATE_FUNCTION_OVERLOAD(log, [](const auto &x) { return 1 / x; });
 STATE_FUNCTION_OVERLOAD(log10,
-                        [](const auto &x) { return 1 / (x * log(10.)); });
-STATE_FUNCTION_OVERLOAD(log2, [](const auto &x) { return 1 / (x * log(2.)); });
+                        [](const auto &x) { return 1 / (x * std::log(10.)); });
+STATE_FUNCTION_OVERLOAD(log2,
+                        [](const auto &x) { return 1 / (x * std::log(2.)); });
 
 /*VARIABLE_OVERLOAD_FUNCTION_2(pow);*/
 /*VARIABLE_OVERLOAD_FUNCTION_2(atan2);*/

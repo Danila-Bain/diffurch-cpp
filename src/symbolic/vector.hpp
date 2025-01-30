@@ -65,14 +65,13 @@ constexpr auto D(const Vector<Coordinates...> &vector) {
   }
 }
 
-/*template <IsStateExpression L, IsStateExpression R> auto operator&(L l, R r)
- * {*/
-/*  return std::make_tuple(l, r);*/
-/*}*/
-/**/
-/*template <IsStateExpression... L, IsStateExpression R>*/
-/*auto operator&(std::tuple<L...> l, R r) {*/
-/*  return std::tuple_cat(l, std::make_tuple(r));*/
-/*}*/
+template <IsStateExpression L, IsStateExpression R> auto operator&(L l, R r) {
+  return std::make_tuple(l, r);
+}
+
+template <IsStateExpression... L, IsStateExpression R>
+auto operator&(std::tuple<L...> l, R r) {
+  return std::tuple_cat(l, std::make_tuple(r));
+}
 
 } // namespace State
