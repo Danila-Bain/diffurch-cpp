@@ -7,9 +7,8 @@
 
 namespace State {
 
-#define STATE_OPERATOR_OVERLOAD(op, op_name, base_class)                       \
-  template <IsStateExpression L, IsStateExpression R>                          \
-  struct op_name : base_class {                                                \
+#define STATE_OPERATOR_OVERLOAD(op, op_name, argument_class, base_class)       \
+  template <argument_class L, argument_class R> struct op_name : base_class {  \
     L l;                                                                       \
     R r;                                                                       \
                                                                                \
@@ -25,56 +24,18 @@ namespace State {
     auto operator()(double t) const { return l(t) op r(t); }                   \
     auto get_events() const { return Events(l.get_events(), r.get_events()); } \
   };                                                                           \
-  template <IsStateExpression L, IsStateExpression R>                          \
-  auto operator op(L l, R r) {                                                 \
+  template <argument_class L, argument_class R> auto operator op(L l, R r) {   \
     return op_name(l, r);                                                      \
   }                                                                            \
-  template <IsNotStateExpression L, IsStateExpression R>                       \
-  auto operator op(L &&l, R r) {                                               \
+  template <typename L, argument_class R> auto operator op(L &&l, R r) {       \
     return op_name(Constant(std::forward<L>(l)), r);                           \
   }                                                                            \
-  template <IsStateExpression L, IsNotStateExpression R>                       \
-  auto operator op(L l, R &&r) {                                               \
+  template <argument_class L, typename R> auto operator op(L l, R &&r) {       \
     return op_name(l, Constant(std::forward<R>(r)));                           \
   }
 
-STATE_OPERATOR_OVERLOAD(+, Add, StateExpression);
-STATE_OPERATOR_OVERLOAD(-, Sub, StateExpression);
-STATE_OPERATOR_OVERLOAD(*, Mul, StateExpression);
-STATE_OPERATOR_OVERLOAD(/, Div, StateExpression);
-
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
-constexpr auto D(const Add<L, R> &add) {
-  return D<derivative>(add.l) + D<derivative>(add.r);
-}
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
-constexpr auto D(const Sub<L, R> &sub) {
-  return D<derivative>(sub.l) - D<derivative>(sub.r);
-}
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
-constexpr auto D(const Mul<L, R> &mul) {
-  if constexpr (derivative == 0)
-    return mul;
-  else
-    return D<derivative - 1>(D(mul.l) * mul.r + mul.l * D(mul.r));
-}
-
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
-constexpr auto D(const Div<L, R> &div) {
-  if constexpr (derivative == 0)
-    return div;
-  else
-    return D<derivative - 1>((D(div.l) * div.r - div.l * D(div.r)) /
-                             (div.r * div.r));
-}
-
-STATE_OPERATOR_OVERLOAD(<, Less, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(>, Greater, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(<=, LessEq, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(>=, GreaterEq, StateBoolExpression);
-
-#define STATE_UNARY_OPERATOR_OVERLOAD(op, op_name)                             \
-  template <IsStateExpression Arg> struct op_name : StateExpression {          \
+#define STATE_UNARY_OPERATOR_OVERLOAD(op, op_name, argument_class, base_class) \
+  template <argument_class Arg> struct op_name : base_class {                  \
     Arg arg;                                                                   \
     op_name(Arg arg_) : arg(arg_) {}                                           \
     auto operator()(const auto &state) const { return op(arg(state)); }        \
@@ -85,16 +46,56 @@ STATE_OPERATOR_OVERLOAD(>=, GreaterEq, StateBoolExpression);
     auto prev(const auto &state) const { return op(arg.prev(state)); }         \
     auto get_events() const { return arg.get_events(); }                       \
   };                                                                           \
-  template <IsStateExpression Arg> auto operator op(Arg arg) {                 \
+  template <argument_class Arg> auto operator op(Arg arg) {                    \
     return op_name(arg);                                                       \
   }
 
-STATE_UNARY_OPERATOR_OVERLOAD(-, Neg);
+STATE_OPERATOR_OVERLOAD(+, Add, IsStateExpression, StateExpression);
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Add<L, R> &add) {
+  return D<derivative>(add.l) + D<derivative>(add.r);
+}
+STATE_OPERATOR_OVERLOAD(-, Sub, IsStateExpression, StateExpression);
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Sub<L, R> &sub) {
+  return D<derivative>(sub.l) - D<derivative>(sub.r);
+}
+STATE_OPERATOR_OVERLOAD(*, Mul, IsStateExpression, StateExpression);
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Mul<L, R> &mul) {
+  if constexpr (derivative == 0)
+    return mul;
+  else
+    return D<derivative - 1>(D(mul.l) * mul.r + mul.l * D(mul.r));
+}
 
-template <IsStateExpression Arg> auto operator+(Arg arg) { return arg; }
+STATE_OPERATOR_OVERLOAD(/, Div, IsStateExpression, StateExpression);
+template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+constexpr auto D(const Div<L, R> &div) {
+  if constexpr (derivative == 0)
+    return div;
+  else
+    return D<derivative - 1>((D(div.l) * div.r - div.l * D(div.r)) /
+                             (div.r * div.r));
+}
+
+STATE_UNARY_OPERATOR_OVERLOAD(-, Neg, IsStateExpression, StateExpression);
 template <size_t derivative = 1, IsStateExpression Arg>
 constexpr auto D(const Neg<Arg> &neg) {
   return -D<derivative>(neg.arg);
 }
 
+// UNARY PLUS is NoOp
+template <IsStateExpression Arg> auto operator+(Arg arg) { return arg; }
+
+STATE_OPERATOR_OVERLOAD(<, Less, IsStateExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(>, Greater, IsStateExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(<=, LessEq, IsStateExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(>=, GreaterEq, IsStateExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(&&, And, IsStateBoolExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(||, Or, IsStateBoolExpression, StateBoolExpression);
+/*STATE_OPERATOR_OVERLOAD(!=, Xor, IsStateBoolExpression,
+ * StateBoolExpression);*/
+STATE_UNARY_OPERATOR_OVERLOAD(!, LogicalNeg, IsStateBoolExpression,
+                              StateBoolExpression);
 } // namespace State
