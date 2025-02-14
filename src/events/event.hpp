@@ -3,18 +3,18 @@
 #include "primitives.hpp"
 #include <type_traits>
 
-template <typename DetectT = std::nullptr_t,
+template <typename DetectHandler = std::nullptr_t,
           typename SaveHandler = std::nullptr_t,
           typename SetHandler = std::nullptr_t>
 struct Event : EventSaveInterface<SaveHandler>, EventSetInterface<SetHandler> {
 private:
-  DetectT _detect;
+  DetectHandler _detect;
 
 public:
-  Event(DetectT detect_ = nullptr, SaveHandler save_handler = nullptr,
-        SetHandler set_handler = nullptr)
+  Event(DetectHandler detect_handler = nullptr,
+        SaveHandler save_handler = nullptr, SetHandler set_handler = nullptr)
       : EventSaveInterface<SaveHandler>(save_handler),
-        EventSetInterface<SetHandler>(set_handler), _detect(detect_) {};
+        EventSetInterface<SetHandler>(set_handler), _detect(detect_handler) {};
 
   void operator()(auto &state) {
     constexpr bool can_save = !std::is_same_v<SaveHandler, std::nullptr_t>;

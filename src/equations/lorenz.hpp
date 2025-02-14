@@ -16,7 +16,7 @@ struct Lorenz : Solver<Lorenz> {
   static const bool ic_is_true_solution = false;
 
   auto get_lhs() {
-    return State::Vector(sigma * (x - y), x * (rho - z) - y, x * y - beta * z);
+    return sigma * (x - y) | x * (rho - z) - y | x * y - beta * z;
   }
   auto get_ic() { return State::Vector(); }
 
