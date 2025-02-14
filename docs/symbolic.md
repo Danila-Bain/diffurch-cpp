@@ -121,4 +121,28 @@ For all classes the differential operator `D<size_t derivative_order = 1>` is de
 
 ## StateBoolExpression
 
-State bool expressions are just like state expressions, but they only evaluate to bool and can be used with logical operators `!`, `||` and `&&`.
+State bool expressions are just like state expressions, but they only evaluate to bool and can be used with logical operators `!`, `||`, `&&`, and `!=` for xor.
+
+## Events (unimplemented)
+
+For events, detection handler, save handler, and set handler are to be specified.
+
+For detection, the syntax is this:
+```
+x >> 0 && y < 0
+```
+this corresponds to an event, that triggers when x is zero and y is negative. For events of directional zero crossing, use `x ^ 0` for crossing zero from below, and `0 ^ x` for crossing zero from above.
+
+For save handler, the syntax is:
+```
+t & x & y & z
+```
+or
+```
+t | x | y | z
+```
+
+For set handler, the syntax is
+```
+x << -0.9*x && y << y + x
+```
