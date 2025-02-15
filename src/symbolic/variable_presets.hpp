@@ -21,46 +21,46 @@ namespace diffurch {
 
 #define VARIABLES_D(X, n) BOOST_PP_REPEAT(n, VARIABLE_D, X)
 
-namespace Variables_xi_t {
+namespace variables_xi_t {
 static constexpr auto t = TimeVariable();
 VARIABLES_INDEXED(x, 10);
-} // namespace Variables_xi_t
+} // namespace variables_xi_t
 
-namespace Variables_x_t {
+namespace variables_x_t {
 static constexpr auto t = TimeVariable();
 static constexpr auto x = Variable<0>();
 static constexpr auto Dx = Variable<1>();
 static constexpr auto DDx = Variable<2>();
 static constexpr auto DDDx = Variable<3>();
 static constexpr auto DDDDx = Variable<4>();
-} // namespace Variables_x_t
+} // namespace variables_x_t
 
-namespace Variables_xy_t {
+namespace variables_xy_t {
 static constexpr auto t = TimeVariable();
 static constexpr auto x = Variable<0>();
 static constexpr auto y = Variable<1>();
-} // namespace Variables_xy_t
+} // namespace variables_xy_t
 
-namespace Variables_xyz_t {
+namespace variables_xyz_t {
 static constexpr auto t = TimeVariable();
 static constexpr auto x = Variable<0>();
 static constexpr auto y = Variable<1>();
 static constexpr auto z = Variable<2>();
-} // namespace Variables_xyz_t
+} // namespace variables_xyz_t
 
-namespace Variables_y_x {
+namespace variables_y_x {
 static constexpr auto x = TimeVariable();
 static constexpr auto y = Variable<0>();
 static constexpr auto Dy = Variable<1>();
 static constexpr auto DDy = Variable<2>();
 static constexpr auto DDDy = Variable<3>();
 static constexpr auto DDDDy = Variable<4>();
-} // namespace Variables_y_x
+} // namespace variables_y_x
 
-namespace Variables_rho_theta_t {
+namespace variables_rho_theta_t {
 static constexpr auto t = TimeVariable();
 static constexpr auto rho = Variable<0>();
 static constexpr auto theta = Variable<1>();
-} // namespace Variables_rho_theta_t
-//
+} // namespace variables_rho_theta_t
+
 } // namespace diffurch

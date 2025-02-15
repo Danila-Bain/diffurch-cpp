@@ -9,7 +9,7 @@ private:
   SaveHandler save_handler;
 
 public:
-  EventSaveInterface(SaveHandler save_handler_)
+  EventSaveInterface(const SaveHandler &save_handler_)
       : save_handler(save_handler_) {};
   std::tuple<std::vector<double>> saved;
   void save(const auto &state) {
@@ -20,6 +20,7 @@ public:
 template <> struct EventSaveInterface<std::nullptr_t> {
   EventSaveInterface(std::nullptr_t = nullptr) {};
   std::tuple<> saved;
+  inline void save(const auto &state) {}
 };
 
 template <typename... SaveHandlers>
@@ -34,11 +35,8 @@ private:
   }
 
 public:
-  EventSaveInterface(std::tuple<SaveHandlers...> save_handlers_)
+  EventSaveInterface(const std::tuple<SaveHandlers...> &save_handlers_)
       : save_handlers(save_handlers_) {};
-
-  EventSaveInterface(Vector<SaveHandlers...> vector_)
-      : save_handlers(vector_.coordinates) {};
 
   std::tuple<std::conditional_t<true, std::vector<double>, SaveHandlers>...>
       saved;
@@ -49,8 +47,26 @@ public:
 };
 
 template <typename... SaveHandlers>
-EventSaveInterface(Vector<SaveHandlers...>)
-    -> EventSaveInterface<SaveHandlers...>;
+struct EventSaveInterface<Vector<SaveHandlers...>>
+    : EventSaveInterface<std::tuple<SaveHandlers...>> {
+
+  EventSaveInterface(const Vector<SaveHandlers...> &vector_)
+      : EventSaveInterface<std::tuple<SaveHandlers...>>(vector_.coordinates) {};
+};
+
+// default constructor
+/*EventSaveInterface() -> EventSaveInterface<std::nullptr_t>;*/
+// generic constructor
+/*template <typename SaveHandler>*/
+/*EventSaveInterface(SaveHandler) -> EventSaveInterface<SaveHandler>;*/
+// tuple constructor
+/*template <typename... SaveHandlers>*/
+/*EventSaveInterface(const std::tuple<SaveHandlers...> &)*/
+/*    -> EventSaveInterface<std::tuple<SaveHandlers...>>;*/
+// vector constructor
+/*template <typename... SaveHandlers>*/
+/*EventSaveInterface(Vector<SaveHandlers...>)*/
+/*    -> EventSaveInterface<std::tuple<SaveHandlers...>>;*/
 
 template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
 

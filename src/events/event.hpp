@@ -13,8 +13,9 @@ private:
   DetectHandler _detect;
 
 public:
-  Event(DetectHandler detect_handler = nullptr,
-        SaveHandler save_handler = nullptr, SetHandler set_handler = nullptr)
+  Event(DetectHandler detect_handler = DetectHandler{},
+        SaveHandler save_handler = SaveHandler{},
+        SetHandler set_handler = SetHandler{})
       : EventSaveInterface<SaveHandler>(save_handler),
         EventSetInterface<SetHandler>(set_handler), _detect(detect_handler) {};
 
@@ -34,6 +35,14 @@ public:
   }
 };
 
+/*template <typename A1, typename A2, typename A3>*/
+/*Event(A1, A2, A3) -> Event<A1, A2, A3>;*/
+/*template <typename A1, typename A2>*/
+/*Event(A1, A2) -> Event<A1, A2, std::nullptr_t>;*/
+/*template <typename A1> Event(A1) -> Event<A1, std::nullptr_t,
+ * std::nullptr_t>;*/
+/*Event() -> Event<std::nullptr_t, std::nullptr_t, std::nullptr_t>;*/
+
 /*template <typename T> struct isEvent : std::false_type {};*/
 /*template <typename... T> struct isEvent<Event<T...>> : std::true_type {};*/
 /*template <typename T> inline constexpr bool isEvent_v = isEvent<T>::value;*/
@@ -42,8 +51,8 @@ public:
   template <typename SaveHandler = std::nullptr_t,                             \
             typename SetHandler = std::nullptr_t>                              \
   struct EventName : Event<std::nullptr_t, SaveHandler, SetHandler> {          \
-    EventName(SaveHandler save_handler = nullptr,                              \
-              SetHandler set_handler = nullptr)                                \
+    EventName(SaveHandler save_handler = SaveHandler{},                        \
+              SetHandler set_handler = SetHandler{})                           \
         : Event<std::nullptr_t, SaveHandler, SetHandler>(                      \
               nullptr, save_handler, set_handler) {}                           \
   };                                                                           \

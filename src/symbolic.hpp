@@ -5,6 +5,6 @@
 #include "symbolic/math.hpp"
 #include "symbolic/operators.hpp"
 #include "symbolic/piecewise.hpp"
+#include "symbolic/variable_presets.hpp"
 #include "symbolic/variables.hpp"
-#include "symbolic/variables_presets.hpp"
 #include "symbolic/vector.hpp"
