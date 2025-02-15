@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(SOURCES
   test/ndde_plot.cpp
   test/global_error.cpp
-  test/events.cpp
-  test/constness.cpp
+  test/api/events.cpp
+  test/educational/constness.cpp
 )
 
 execute_process(
