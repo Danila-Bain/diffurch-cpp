@@ -131,7 +131,14 @@ For detection, the syntax is this:
 ```
 x >> 0 && y < 0
 ```
-this corresponds to an event, that triggers when x is zero and y is negative. For events of directional zero crossing, use `x ^ 0` for crossing zero from below, and `0 ^ x` for crossing zero from above.
+this corresponds to an event, that triggers when x is zero and y is negative. For events of directional zero crossing, use `x ^ 0` for crossing zero from below, and `0 ^ x` for crossing zero from above. I don't really like this syntax, it kinda cool but seems random, and may be hard to remember if not used too often, unlike `x << -0.9*x` syntax for set handler, becuase it is akin stream syntax.
+
+Maybe here it is more appropriate to just make a named function like `When(x == 0)`, that, by template magic, will differentiate between
+`x == 0` which is really `State::Equal(x, 0)`, `x >= y` which is really `State::GreaterThanEqual(x, y)`, etc, so the syntax becomes
+```
+When(x == 0) && y < 0
+```
+
 
 For save handler, the syntax is:
 ```
@@ -146,3 +153,5 @@ For set handler, the syntax is
 ```
 x << -0.9*x && y << y + x
 ```
+
+(this is just great)

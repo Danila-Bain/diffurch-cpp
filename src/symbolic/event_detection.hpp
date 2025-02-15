@@ -1,13 +1,14 @@
 #pragma once
 
 #include "expression.hpp"
+#include "operators.hpp"
 
 #include "../util/find_root.hpp"
 #include <limits>
 
 namespace State {
 
-template <typename Arg> struct EqualEvent : StateEventExpression {
+template <typename Arg> struct EqualEvent : StateDetectExpression {
   Arg arg;
   EqualEvent(Arg arg_) : arg(arg_) {};
 
@@ -35,7 +36,7 @@ template <typename Arg> struct EqualEvent : StateEventExpression {
   }
 };
 
-template <typename Arg> struct EqualToPosEvent : EqualEvent<Arg> {
+template <typename Arg> struct AboveEvent : EqualEvent<Arg> {
 
   using EqualEvent<Arg>::arg;
   using EqualEvent<Arg>::EqualEvent;
@@ -46,40 +47,33 @@ template <typename Arg> struct EqualToPosEvent : EqualEvent<Arg> {
   }
 };
 
-template <typename Arg> struct EqualToNegEvent : EqualEvent<Arg> {
+// support for When(x == 0) or When(x > 0) syntax
+template <IsStateExpression L, IsStateExpression R>
+auto When(const Equal<L, R> &bool_expr) {
+  return EqualEvent(bool_expr.l - bool_expr.r);
+}
+template <IsStateExpression L, IsStateExpression R>
+auto When(const Greater<L, R> &bool_expr) {
+  return AboveEvent(bool_expr.l - bool_expr.r);
+}
+template <IsStateExpression L, IsStateExpression R>
+auto When(const GreaterEqual<L, R> &bool_expr) {
+  return AboveEvent(bool_expr.l - bool_expr.r);
+}
+template <IsStateExpression L, IsStateExpression R>
+auto When(const Less<L, R> &bool_expr) {
+  return AboveEvent(bool_expr.r - bool_expr.l);
+}
+template <IsStateExpression L, IsStateExpression R>
+auto When(const LessEqual<L, R> &bool_expr) {
+  return AboveEvent(bool_expr.r - bool_expr.l);
+}
 
-  using EqualEvent<Arg>::arg;
-  using EqualEvent<Arg>::EqualEvent;
-  using EqualEvent<Arg>::locate;
-
-  bool detect(const auto &state) const {
-    return arg(state) <= 0 && arg.prev(state) > 0;
-  }
-};
-
-#define EVENT_OVERLOAD_OPERATOR(op, op_name)                                   \
-  template <IsStateExpression L, IsStateExpression R>                          \
-  auto operator op(L l, R r) {                                                 \
-    return op_name(l - r);                                                     \
-  }                                                                            \
-  template <IsNotStateExpression L, IsStateExpression R>                       \
-  auto operator op(L l, R r) {                                                 \
-    return op_name(Constant(l) - r);                                           \
-  }                                                                            \
-  template <IsStateExpression L, IsNotStateExpression R>                       \
-  auto operator op(L l, R r) {                                                 \
-    return op_name(l - Constant(r));                                           \
-  }
-
-EVENT_OVERLOAD_OPERATOR(==, EqualEvent);
-EVENT_OVERLOAD_OPERATOR(!=, EqualToNegEvent);
-EVENT_OVERLOAD_OPERATOR(<=>, EqualToPosEvent);
-
-template <IsStateEventExpression Event, IsStateBoolExpression Condition>
-struct StateEventWithLocationCondition : StateEventExpression {
+template <IsStateDetectExpression Event, IsStateBoolExpression Condition>
+struct StateDetectWithLocationCondition : StateDetectExpression {
   Event event;
   Condition condition;
-  StateEventWithLocationCondition(Event event_, Condition condition_)
+  StateDetectWithLocationCondition(Event event_, Condition condition_)
       : event(event_), condition(condition_) {};
 
   bool detect(const auto &state) const { return event.detect(state); }
@@ -99,11 +93,11 @@ struct StateEventWithLocationCondition : StateEventExpression {
   }
 };
 
-template <IsStateEventExpression Event, IsStateBoolExpression Condition>
-struct StateEventWithDetectionCondition : StateEventExpression {
+template <IsStateDetectExpression Event, IsStateBoolExpression Condition>
+struct StateDetectWithDetectionCondition : StateDetectExpression {
   Event event;
   Condition condition;
-  StateEventWithDetectionCondition(Event event_, Condition condition_)
+  StateDetectWithDetectionCondition(Event event_, Condition condition_)
       : event(event_), condition(condition_) {};
 
   bool detect(const auto &state) const {
@@ -120,14 +114,14 @@ struct StateEventWithDetectionCondition : StateEventExpression {
 };
 
 #define EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(op, op_name)                    \
-  template <IsStateEventExpression Event, IsStateBoolExpression Condition>     \
+  template <IsStateDetectExpression Event, IsStateBoolExpression Condition>    \
   auto operator op(Event event, Condition condition) {                         \
     return op_name(event, condition);                                          \
   }
 
 // has precedence 14
-EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&&, StateEventWithDetectionCondition);
+EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&&, StateDetectWithDetectionCondition);
 // has precedence 11
-EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&, StateEventWithLocationCondition);
+EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&, StateDetectWithLocationCondition);
 
 } // namespace State

@@ -15,6 +15,7 @@ namespace State {
 
 DECLARE_STATE_EXPRESSION_TYPE(StateExpression);
 DECLARE_STATE_EXPRESSION_TYPE(StateBoolExpression);
-DECLARE_STATE_EXPRESSION_TYPE(StateEventExpression);
+DECLARE_STATE_EXPRESSION_TYPE(StateDetectExpression);
+DECLARE_STATE_EXPRESSION_TYPE(StateSetExpression);
 
 } // namespace State

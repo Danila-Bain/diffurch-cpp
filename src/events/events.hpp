@@ -3,6 +3,7 @@
 #include "../util/type_traits.hpp"
 #include "event.hpp"
 #include <limits>
+#include <tuple>
 
 // Class that contains events that will run simultaniously
 template <template <typename...> typename EventType, typename... EventTypes>
