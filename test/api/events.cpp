@@ -149,6 +149,19 @@ int main() {
       e2(s);
       ASSERT(s.x_curr[0] == 0.01 + 1. + 1. && s.x_curr[1] == 2.);
     }
+
+    {
+      auto s = state;
+
+      auto e1 = Event(nullptr, x | y, x << x + z);
+      e1(s);
+
+      ASSERT(e1.saved == make_tuple(vector<double>{0.01, 0.01 + 1.},
+                                    vector<double>{0.02, 0.02}));
+
+      ASSERT(s.x_prev == state.x_curr);
+      ASSERT((s.x_curr == array<double, 3>({0.01 + 1., 0.02, 0.03})));
+    }
   }
 
   if (error_count == 0) {
