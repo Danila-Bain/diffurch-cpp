@@ -5,7 +5,7 @@
 #include <math.h>
 #include <utility>
 
-namespace State {
+namespace diffurch {
 
 #define STATE_OPERATOR_OVERLOAD(op, op_name, argument_class, base_class)       \
   template <Is##argument_class L, Is##argument_class R>                        \
@@ -107,4 +107,4 @@ STATE_OPERATOR_OVERLOAD(==, BoolEqual, StateBoolExpression,
 STATE_UNARY_OPERATOR_OVERLOAD(!, BoolNeg, StateBoolExpression,
                               StateBoolExpression);
 
-} // namespace State
+} // namespace diffurch

@@ -1,6 +1,6 @@
 #pragma once
 #include "../solver.hpp"
-namespace Equation {
+namespace diffurch::equation {
 struct RelayDDE1 : Solver<RelayDDE1> {
 
   double alpha; // sign coeff
@@ -10,12 +10,12 @@ struct RelayDDE1 : Solver<RelayDDE1> {
   RelayDDE1(double alpha_, double k_, double tau_)
       : alpha(alpha_), k(k_), tau(tau_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return State::Vector(k * x + alpha * sign(x(t - tau))); }
+  auto get_lhs() { return Vector(k * x + alpha * sign(x(t - tau))); }
   auto get_ic() {
     double a, b;
     if (k == 0) {
@@ -35,4 +35,4 @@ struct RelayDDE1 : Solver<RelayDDE1> {
 
   auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
 };
-} // namespace Equation
+} // namespace diffurch::equation

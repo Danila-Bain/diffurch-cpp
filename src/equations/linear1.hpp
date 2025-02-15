@@ -1,19 +1,19 @@
 #pragma once
 #include "../solver.hpp"
-namespace Equation {
+namespace diffurch::equation {
 struct Linear1 : Solver<Linear1> {
 
   double k;
 
   Linear1(double k_ = -1.) : k(k_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return State::Vector(k * x); }
-  auto get_ic() { return State::Vector(exp(k * t)); }
+  auto get_lhs() { return Vector(k * x); }
+  auto get_ic() { return Vector(exp(k * t)); }
 
   std::string repr(bool latex = true) {
     std::string kk = (k == 1 ? "" : k == -1 ? "-" : std::format("{:.3g}", k));
@@ -24,4 +24,4 @@ struct Linear1 : Solver<Linear1> {
   }
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }*/
 };
-} // namespace Equation
+} // namespace diffurch::equation

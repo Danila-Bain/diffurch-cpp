@@ -4,7 +4,7 @@
 #include "expression.hpp"
 #include <tuple>
 
-namespace State {
+namespace diffurch {
 
 template <IsStateExpression... Coordinates> struct Vector : StateExpression {
   std::tuple<Coordinates...> coordinates;
@@ -54,7 +54,7 @@ auto operator|(Vector<L...> l, R r) {
   return Vector(std::tuple_cat(l.coordinates, std::make_tuple(r)));
 }
 
-template <size_t derivative = 1, IsStateExpression... Coordinates>
+template <std::size_t derivative = 1, IsStateExpression... Coordinates>
 constexpr auto D(const Vector<Coordinates...> &vector) {
   if constexpr (derivative == 0) {
     return vector;
@@ -74,4 +74,4 @@ auto operator&(std::tuple<L...> l, R r) {
   return std::tuple_cat(l, std::make_tuple(r));
 }
 
-} // namespace State
+} // namespace diffurch

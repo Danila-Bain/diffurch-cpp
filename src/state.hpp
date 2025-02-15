@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace State {
+namespace diffurch {
 
 template <typename RK, typename InitialConditionHandler> struct State {
 
@@ -28,13 +28,13 @@ template <typename RK, typename InitialConditionHandler> struct State {
   Vec<n> x_curr;
   Vec<n> x_prev;
   // should be a queue, used only for interpolation
-  vector<Vec<n>> x_sequence;
+  std::vector<Vec<n>> x_sequence;
 
   // K values for interpolation, runge kutta method must support intrpolation
   // in the future, queue should be used instead of vector, and the requred time
   // span of that queue (i.e. the delay time, or )
-  array<Vec<n>, RK::s> K_curr;
-  vector<array<Vec<n>, RK::s>> K_sequence;
+  std::array<Vec<n>, RK::s> K_curr;
+  std::vector<std::array<Vec<n>, RK::s>> K_sequence;
 
   Vec<n> error_curr;
 
@@ -85,4 +85,4 @@ template <typename RK, typename InitialConditionHandler> struct State {
   }
 };
 
-} // namespace State
+} // namespace diffurch

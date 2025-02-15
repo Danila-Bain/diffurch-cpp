@@ -3,7 +3,7 @@
 #include "../events.hpp"
 #include "expression.hpp"
 
-namespace State {
+namespace diffurch {
 
 template <IsNotStateExpression T = double> struct Constant : StateExpression {
   T value;
@@ -131,4 +131,4 @@ template <size_t N, size_t from = 0, size_t to = N> constexpr auto Variables() {
   }
 }
 
-} // namespace State
+} // namespace diffurch

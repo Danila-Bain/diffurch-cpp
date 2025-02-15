@@ -4,47 +4,45 @@
 #include <functional>
 #include <math.h>
 
-using namespace std;
+namespace diffurch {
 
 /*template <size_t N>*/
 /*using Vec = typename conditional<N == 1, double, array<double, N>>::type;*/
 /*template <size_t N>*/
 /*using VecArg = typename conditional<N == 1, Vec<1>, const Vec<N> &>::type;*/
 
-template <size_t N> using Vec = array<double, N>;
+template <size_t N> using Vec = std::array<double, N>;
 template <size_t N> using VecArg = const Vec<N> &;
 
-template <size_t N, size_t M> using VecMap = function<Vec<M>(VecArg<N>)>;
+template <size_t N, size_t M> using VecMap = std::function<Vec<M>(VecArg<N>)>;
 
 template <size_t N1, size_t N2, size_t M>
-using VecMap2 = function<Vec<M>(VecArg<N1>, VecArg<N2>)>;
+using VecMap2 = std::function<Vec<M>(VecArg<N1>, VecArg<N2>)>;
 
-namespace std {
-
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 std::array<T, N> operator+(const std::array<T, N> &lhs,
                            const std::array<T, N> &rhs) {
   std::array<T, N> result;
-  for (std::size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     result[i] = lhs[i] + rhs[i];
   }
   return result;
 }
 
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 std::array<T, N> operator-(const std::array<T, N> &lhs,
                            const std::array<T, N> &rhs) {
   std::array<T, N> result;
-  for (std::size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     result[i] = lhs[i] - rhs[i];
   }
   return result;
 }
 
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 std::array<T, N> operator*(const std::array<T, N> &lhs, T rhs) {
   std::array<T, N> result;
-  for (std::size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     result[i] = lhs[i] * rhs;
   }
   return result;
@@ -53,10 +51,10 @@ std::array<T, N> operator*(const std::array<T, N> &lhs, T rhs) {
 /**
  * @brief Product of a scalar and array.
  */
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 std::array<T, N> operator*(T lhs, const std::array<T, N> &rhs) {
   std::array<T, N> result;
-  for (std::size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     result[i] = lhs * rhs[i];
   }
   return result;
@@ -65,37 +63,36 @@ std::array<T, N> operator*(T lhs, const std::array<T, N> &rhs) {
 /**
  * @brief Divide an array by a scalar.
  */
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 std::array<T, N> operator/(const std::array<T, N> &lhs, T rhs) {
   return lhs *
          (1 / rhs); // Is it more efficient to multiply by reciprocal that is
-                    // calculated once, than perform a multiple divisions?
+  // calculated once, than perform a multiple divisions?
 }
 
 /**
  * @brief Dot product of two arrays.
  */
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 T operator*(const std::array<T, N> &lhs, const std::array<T, N> &rhs) {
   T result;
-  for (std::size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     result += lhs[i] * rhs[i];
   }
   return result;
 }
-} // namespace std
 
 template <typename ContainerL, typename ContainerR>
 decltype(ContainerL{}[0] * ContainerR{}[0])
 dot(const ContainerL &lhs, const ContainerR &rhs, size_t size) {
   decltype(lhs[0] * rhs[0]) result{};
-  for (std::size_t i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     result = result + lhs[i] * rhs[i];
   }
   return result;
 }
 
-template <typename T, std::size_t N, std::size_t M>
+template <typename T, size_t N, size_t M>
 std::array<T, N + M> concatenate(const std::array<T, N> &arr1,
                                  const std::array<T, M> &arr2) {
   std::array<T, N + M> result;
@@ -107,25 +104,27 @@ std::array<T, N + M> concatenate(const std::array<T, N> &arr1,
 inline void VecCopy(double from, double &to, size_t = 0) { to = from; }
 
 template <size_t n, typename T>
-inline void VecCopy(T from, array<T, n> &to, size_t i = 0) {
+inline void VecCopy(T from, std::array<T, n> &to, size_t i = 0) {
   to[i] = from;
 }
 
 template <size_t n, size_t m, typename T>
-inline void VecCopy(const array<T, n> &from, array<T, m> &to, size_t i = 0) {
+inline void VecCopy(const std::array<T, n> &from, std::array<T, m> &to,
+                    size_t i = 0) {
   copy(from.begin(), from.end(), to.begin() + i);
 }
 
 template <size_t n, typename T>
-inline void VecCopy(const array<T, n> &from, vector<T> &to, size_t i = 0) {
+inline void VecCopy(const std::array<T, n> &from, std::vector<T> &to,
+                    size_t i = 0) {
   copy(from.begin(), from.end(), to.begin() + i);
 }
 
-inline void VecCopy(double from, vector<double> &to, size_t i = 0) {
+inline void VecCopy(double from, std::vector<double> &to, size_t i = 0) {
   to[i] = from;
 }
 
-template <size_t n, typename T> inline double norm(const array<T, n> &v) {
+template <size_t n, typename T> inline double norm(const std::array<T, n> &v) {
   return sqrt(v * v);
 }
 
@@ -152,7 +151,7 @@ std::vector<double> linspace(auto start_in, auto end_in, int num_in) {
     result[i] = start + delta * i / (num - 1);
   }
   result[num - 1] = end; // I want to ensure that start and end
-                         // are exactly the same as the input
+  // are exactly the same as the input
   return result;
 }
 
@@ -177,6 +176,7 @@ std::vector<double> logspace(auto start_in, auto end_in, int num_in) {
     result[i] = start * exp(i * delta);
   }
   result[num - 1] = end; // I want to ensure that start and end
-                         // are exactly the same as the input
+  // are exactly the same as the input
   return result;
 }
+} // namespace diffurch

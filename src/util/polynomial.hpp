@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-
+namespace diffurch {
 template <size_t order, size_t degree>
 constexpr std::array<double, degree - order + 1> derivative_coefficients() {
   std::array<double, degree - order + 1> C;
@@ -60,3 +60,4 @@ std::array<double, n> eval_array(const std::array<Polynomial<k>, n> &arr,
   });
   return result;
 }
+} // namespace diffurch

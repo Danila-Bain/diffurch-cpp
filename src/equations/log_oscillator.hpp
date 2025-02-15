@@ -1,23 +1,23 @@
 #pragma once
 #include "../solver.hpp"
-namespace Equation {
+namespace diffurch::equation {
 struct LogOscillator : Solver<LogOscillator> {
 
   double w;
 
   LogOscillator(double w_ = 0.5) : w(w_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
-  static constexpr auto Dx = State::Variable<1>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
+  static constexpr auto Dx = Variable<1>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
-    return State::Vector(Dx, w * w * x * (1 - log(x) - log(x) * log(x)));
+    return Vector(Dx, w * w * x * (1 - log(x) - log(x) * log(x)));
   }
   auto get_ic() {
-    return State::Vector(exp(sin(w * t)), w * cos(w * t) * exp(sin(w * t)));
+    return Vector(exp(sin(w * t)), w * cos(w * t) * exp(sin(w * t)));
   }
 
   std::string repr(bool latex = true) {
@@ -30,4 +30,4 @@ struct LogOscillator : Solver<LogOscillator> {
 
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
 };
-} // namespace Equation
+} // namespace diffurch::equation

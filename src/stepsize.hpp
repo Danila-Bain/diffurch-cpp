@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <math.h>
 
+namespace diffurch {
+
 struct ConstantStepsize {
 
   double initial_stepsize;
@@ -44,3 +46,4 @@ struct AdaptiveStepsize {
 };
 
 /*auto a = AdaptiveStepsize{.atol = 1, .rtol = 3};*/
+} // namespace diffurch

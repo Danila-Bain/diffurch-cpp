@@ -6,7 +6,7 @@
 #include "../util/find_root.hpp"
 #include <limits>
 
-namespace State {
+namespace diffurch {
 
 template <typename Arg> struct EqualEvent : StateDetectExpression {
   Arg arg;
@@ -124,4 +124,4 @@ EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&&, StateDetectWithDetectionCondition);
 // has precedence 11
 EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(&, StateDetectWithLocationCondition);
 
-} // namespace State
+} // namespace diffurch

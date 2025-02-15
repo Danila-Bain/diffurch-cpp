@@ -5,7 +5,7 @@
 
 int main(int, char *[]) {
 
-  HarmonicOscillator eq;
+  diffurch::equation::HarmonicOscillator eq;
 
   auto true_solution = eq.get_ic();
 

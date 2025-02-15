@@ -2,6 +2,7 @@
 #include <tuple>
 #include <type_traits>
 
+namespace diffurch {
 template <typename T, template <typename...> typename U>
 struct is_kind_of : std::false_type {};
 template <typename... TArgs, template <typename...> typename U>
@@ -57,3 +58,4 @@ constexpr auto filter_tuple(const std::tuple<Ts...> &tup) {
 /*    }*/
 /*  }*/
 /*}*/
+} // namespace diffurch

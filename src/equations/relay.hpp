@@ -1,6 +1,6 @@
 #pragma once
 #include "../solver.hpp"
-namespace Equation {
+namespace diffurch::equation {
 struct Relay1 : Solver<Relay1> {
 
   double a;
@@ -8,20 +8,20 @@ struct Relay1 : Solver<Relay1> {
 
   Relay1(double a_ = 2, double b_ = 1) : a(a_), b(b_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
     double A = (a + b) / 2;
     double B = (a - b) / 2;
-    return State::Vector(A + B * sign(x));
+    return Vector(A + B * sign(x));
   }
   auto get_ic() {
     double A = (a + b) / 2;
     double B = (a - b) / 2;
-    return State::Vector(A * t + B * abs(t));
+    return Vector(A * t + B * abs(t));
   }
 
   auto get_events() { return Events(StepEvent(std::make_tuple(t, x))); }
@@ -33,13 +33,13 @@ struct Relay2 : Solver<Relay2> {
 
   Relay2(double T_ = 8) : T(T_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
-  static constexpr auto Dx = State::Variable<1>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
+  static constexpr auto Dx = Variable<1>();
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return State::Vector(Dx, -sign(x)); }
+  auto get_lhs() { return Vector(Dx, -sign(x)); }
   auto get_ic() {
     return Periodic(-0.5 * T, 0.5 * T,
                     Piecwise(t < 0.,
@@ -49,4 +49,4 @@ struct Relay2 : Solver<Relay2> {
 
   /*auto get_events() { return Events(StepEvent(std::make_tuple(t, x, Dx))); }*/
 };
-} // namespace Equation
+} // namespace diffurch::equation

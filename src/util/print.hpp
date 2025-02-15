@@ -4,8 +4,7 @@
 #include <iostream>
 #include <tuple>
 #include <vector>
-// io
-
+namespace diffurch {
 #define FILE_IS_EXECUTED                                                       \
   std::cout << "~~~ " << __FILE__ << " is executed ~~~" << std::endl;
 #define FILE_IS_FINISHED                                                       \
@@ -62,3 +61,4 @@ std::ostream &operator<<(std::ostream &os, const std::tuple<Types...> &tpl) {
   os << ")"; // End of tuple
   return os;
 }
+} // namespace diffurch

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-using namespace State;
+using namespace diffurch;
 
 template <size_t n> struct MyState {
   double prev_t;
@@ -37,8 +37,6 @@ struct LorenzTest {
   auto get_ic() { return Vector(sin(t), cos(t), t * t); }
 
   auto get_events() { return Events(StepEvent(t)); }
-
-
 };
 
 auto t = State::TimeVariable();
@@ -107,7 +105,7 @@ int main(int argc, char *argv[]) {
   }
 
   {
-    LorenzTest eq(1,2,3);
+    LorenzTest eq(1, 2, 3);
   }
 
   { // testing passing constants by reference to symbols

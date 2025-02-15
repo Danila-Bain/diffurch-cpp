@@ -10,6 +10,7 @@
 #include <numpy/arrayobject.h>
 
 namespace plt = matplotlibcpp;
+using namespace diffurch;
 
 int main(int, char *[]) {
 
@@ -43,12 +44,12 @@ int main(int, char *[]) {
   /*  std::cout << err << std::endl;*/
   /*  plt::named_loglog(eq.repr(), stepsizes, err);*/
   /*}*/
-  /*{*/
-  /*  auto eq = Equation::LinearDDE1Sin();*/
-  /*  auto err = global_error<rk98>(eq, 0, 10, stepsizes);*/
-  /*  std::cout << err << std::endl;*/
-  /*  plt::named_loglog(eq.repr(), stepsizes, err);*/
-  /*}*/
+  {
+    auto eq = equation::LinearDDE1Sin();
+    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+    std::cout << err << std::endl;
+    plt::named_loglog(eq.repr(), stepsizes, err);
+  }
   /*{*/
   /*  auto eq = Equation::LinearDDE2Sin();*/
   /*  auto err = global_error<rk98>(eq, 0, 10, stepsizes);*/
@@ -56,13 +57,13 @@ int main(int, char *[]) {
   /*  plt::named_loglog(eq.repr(), stepsizes, err);*/
   /*}*/
   {
-    auto eq = Equation::LinearNDDE1Sin();
-    auto err = global_error<rk98>(eq, 0, 10, stepsizes);
+    auto eq = equation::LinearNDDE1Sin();
+    auto err = test::global_error<rk98>(eq, 0, 40, stepsizes);
     std::cout << err << std::endl;
     plt::named_loglog(eq.repr(), stepsizes, err);
   }
 
-  /*plt::ylim(1.e-17, 1.e-5);*/
+  plt::ylim(1.e-17, 1.e-3);
   plt::legend();
   plt::tight_layout();
   plt::show();

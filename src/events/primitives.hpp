@@ -3,7 +3,7 @@
 #include "../symbolic/vector.hpp"
 #include <tuple>
 #include <vector>
-
+namespace diffurch {
 template <typename SaveHandler = std::nullptr_t> struct EventSaveInterface {
 private:
   SaveHandler save_handler;
@@ -37,7 +37,7 @@ public:
   EventSaveInterface(std::tuple<SaveHandlers...> save_handlers_)
       : save_handlers(save_handlers_) {};
 
-  EventSaveInterface(State::Vector<SaveHandlers...> vector_)
+  EventSaveInterface(Vector<SaveHandlers...> vector_)
       : save_handlers(vector_.coordinates) {};
 
   std::tuple<std::conditional_t<true, std::vector<double>, SaveHandlers>...>
@@ -49,7 +49,7 @@ public:
 };
 
 template <typename... SaveHandlers>
-EventSaveInterface(State::Vector<SaveHandlers...>)
+EventSaveInterface(Vector<SaveHandlers...>)
     -> EventSaveInterface<SaveHandlers...>;
 
 template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
@@ -82,3 +82,4 @@ struct EventDetectionInterface {
 template <> struct EventDetectionInterface<std::nullptr_t> {
   EventDetectionInterface(std::nullptr_t = nullptr) {}
 };
+} // namespace diffurch

@@ -5,6 +5,7 @@
 #include <limits>
 #include <tuple>
 
+namespace diffurch {
 // Class that contains events that will run simultaniously
 template <template <typename...> typename EventType, typename... EventTypes>
 /*requires(is_kind_of_v<EventTypes, EventType> && ...)*/
@@ -194,3 +195,4 @@ template <typename... EventTypes> struct Events {
 template <typename... EventTypes1, typename... EventTypes2>
 Events(Events<EventTypes1...> events1, Events<EventTypes2...> events2)
     -> Events<EventTypes1..., EventTypes2...>;
+} // namespace diffurch

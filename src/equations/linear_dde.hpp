@@ -1,6 +1,8 @@
 #pragma once
 #include "../solver.hpp"
-namespace Equation {
+#include <math.h>
+
+namespace diffurch::equation {
 struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
 
   double theta; // 0 -> without delay, 1 -> only delay
@@ -10,19 +12,21 @@ struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
   LinearDDE1Exp(double theta_ = 0.5, double k_ = 1, double tau_ = 1)
       : theta(theta_), k(k_), tau(tau_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
+    using std::exp;
     double a = k * (1 - theta);
     double b = k * exp(tau) * theta;
-    return State::Vector(a * x + b * x(t - tau));
+    return Vector(a * x + b * x(t - tau));
   }
-  auto get_ic() { return State::Vector(exp(k * t)); }
+  auto get_ic() { return Vector(exp(k * t)); }
 
   std::string repr(bool latex = true) {
+    using std::exp;
     double a = k * (1 - theta);
     double b = k * exp(tau) * theta;
     std::string aa = std::format("{:.3g}", a);
@@ -43,19 +47,21 @@ struct LinearDDE1Sin : Solver<LinearDDE1Sin> {
 
   LinearDDE1Sin(double k_ = 1, double tau_ = 1) : k(k_), tau(tau_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
+    using std::tan, std::sin;
     double a = k / tan(k * tau);
     double b = -k / sin(k * tau);
-    return State::Vector(a * x + b * x(t - tau));
+    return Vector(a * x + b * x(t - tau));
   }
-  auto get_ic() { return State::Vector(sin(k * t)); }
+  auto get_ic() { return Vector(sin(k * t)); }
 
   std::string repr(bool latex = true) {
+    using std::tan, std::sin;
     double a = k / tan(k * tau);
     double b = -k / sin(k * tau);
     std::string aa = std::format("{:.3g}", a);
@@ -78,13 +84,14 @@ struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
   LinearDDE2Sin(double theta_ = 0.5, double k_ = 1, double tau_ = 1)
       : theta(theta_), k(k_), tau(tau_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
-  static constexpr auto Dx = State::Variable<1>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
+  static constexpr auto Dx = Variable<1>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
+    using std::cos, std::sin;
     double a = -k * k * (1 - theta);
     double b = -theta * k * k * cos(k * tau);
     double c = -theta * k * sin(k * tau);
@@ -93,6 +100,7 @@ struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
   auto get_ic() { return sin(k * t) | k * cos(k * t); }
 
   std::string repr(bool latex = true) {
+    using std::cos, std::sin;
     double a = -k * k * (1 - theta);
     double b = -theta * k * k * cos(k * tau);
     double c = -theta * k * sin(k * tau);
@@ -118,20 +126,22 @@ struct LinearNDDE1Sin : Solver<LinearNDDE1Sin> {
 
   LinearNDDE1Sin(double k_ = 1, double tau_ = 1) : k(k_), tau(tau_) {};
 
-  static constexpr auto t = State::TimeVariable();
-  static constexpr auto x = State::Variable<0>();
-  static constexpr auto Dx = State::Variable<0, 1>();
+  static constexpr auto t = TimeVariable();
+  static constexpr auto x = Variable<0>();
+  static constexpr auto Dx = Variable<0, 1>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
+    using std::tan, std::cos, std::sin;
     double a = -k * tan(k * tau);
     double b = k / cos(k * tau);
-    return State::Vector(a * x + b * Dx(t - tau));
+    return Vector(a * x + b * Dx(t - tau));
   }
-  auto get_ic() { return State::Vector(sin(k * t)); }
+  auto get_ic() { return Vector(sin(k * t)); }
 
   std::string repr(bool latex = true) {
+    using std::tan, std::cos, std::sin;
     double a = -k * tan(k * tau);
     double b = k / cos(k * tau);
     std::string aa = std::format("{:.3g}", a);
@@ -143,4 +153,4 @@ struct LinearNDDE1Sin : Solver<LinearNDDE1Sin> {
       return "$x' = " + aa + " x " + bb + "x'(t-" + tt + ")$";
   }
 };
-} // namespace Equation
+} // namespace diffurch::equation

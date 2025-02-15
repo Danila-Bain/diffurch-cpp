@@ -12,6 +12,7 @@
 
 #include "rk_tables/rk98.hpp"
 
+namespace diffurch {
 // This class is intended to be exclusively used
 // with Curiously Recurring Template Pattern (CRTP),
 // that is in creating other classes like
@@ -44,7 +45,7 @@ template <typename Equation> struct Solver {
         Events(Events(self->get_events(), lhs.get_events()), additional_events);
     // todo: make Events contructor with arbitrary arguments
 
-    auto state = State::State<RK, decltype(ic)>(initial_time, ic);
+    auto state = State<RK, decltype(ic)>(initial_time, ic);
     state.t_step = stepsize_controller.initial_stepsize;
 
     Vec<n> delta_x;
@@ -82,7 +83,7 @@ template <typename Equation> struct Solver {
       // stepsize for the next step, even if this step is rejected
       /*state.t_step = stepsize_controller.template new_stepsize<RK>(state);*/
       bool reject_step = stepsize_controller.template set_stepsize<RK>(state);
-      state.t_step = min(state.t_step, final_time - state.t_curr);
+      state.t_step = std::min(state.t_step, final_time - state.t_curr);
 
       if (reject_step) {
         events.reject_events(state);
@@ -108,3 +109,4 @@ template <typename Equation> struct Solver {
     return events.get_saved();
   }
 };
+} // namespace diffurch

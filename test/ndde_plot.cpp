@@ -10,27 +10,28 @@
 #include <numpy/arrayobject.h>
 
 namespace plt = matplotlibcpp;
+using namespace diffurch;
 
-namespace State {
+namespace diffurch {
 static constexpr auto t = TimeVariable();
 static constexpr auto x = Variable<0>();
 static constexpr auto Dx = Variable<0, 1>();
-
-} // namespace State
-
+} // namespace diffurch
+//
 int main(int, char *[]) {
 
   {
-    auto eq = Equation::LinearNDDE1Sin(1.);
+    auto eq = equation::LinearNDDE1Sin(1.);
 
-    auto [t, x, xtau, Dxtau] = eq.solution<rktp64>(
+    auto [t, x, xtau, Dxtau] = eq.template solution<rktp64>(
         0, 10, ConstantStepsize(0.1),
-        Events(StepEvent(SaveAll<decltype(eq)>()),
-               StepEvent(State::x(State::t - 1.) & State::Dx(State::t - 1.))));
+        diffurch::Events(StepEvent(SaveAll<decltype(eq)>()),
+                         StepEvent(diffurch::x(diffurch::t - 1.) &
+                                   diffurch::Dx(diffurch::t - 1.))));
 
     auto ic = eq.get_ic();
 
-    vector<double> x_true(t.size());
+    std::vector<double> x_true(t.size());
     std::transform(t.begin(), t.end(), x_true.begin(),
                    [&ic](double t_) { return ic(t_)[0]; });
 

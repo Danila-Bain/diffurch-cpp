@@ -3,10 +3,7 @@
 #include "../util/polynomial.hpp"
 #include <array>
 
-constexpr std::initializer_list<double> my_list = {0., 1., 2.};
-
-/*constexpr std::initializer_list<int> my_list = {1,2,3,4,5};*/
-
+namespace diffurch {
 struct rktp64 {
 
   constexpr static size_t s = 7;
@@ -98,3 +95,4 @@ struct rktp64 {
         -1.50079365079365079365079365079365079365079365079370,
         1.12559523809523809523809523809523809523809523809520}}};
 };
+} // namespace diffurch

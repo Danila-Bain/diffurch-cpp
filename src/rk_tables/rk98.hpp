@@ -3,6 +3,7 @@
 #include "../util/polynomial.hpp"
 #include <array>
 
+namespace diffurch {
 struct rk98 {
 
   constexpr static size_t s = 26; // stages
@@ -720,3 +721,4 @@ struct rk98 {
        {},
        {}}};
 };
+} // namespace diffurch

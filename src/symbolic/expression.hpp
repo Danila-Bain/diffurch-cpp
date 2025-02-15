@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace State {
+namespace diffurch {
 
 #define DECLARE_STATE_EXPRESSION_TYPE(NAME)                                    \
   struct NAME {};                                                              \
@@ -18,4 +18,4 @@ DECLARE_STATE_EXPRESSION_TYPE(StateBoolExpression);
 DECLARE_STATE_EXPRESSION_TYPE(StateDetectExpression);
 DECLARE_STATE_EXPRESSION_TYPE(StateSetExpression);
 
-} // namespace State
+} // namespace diffurch

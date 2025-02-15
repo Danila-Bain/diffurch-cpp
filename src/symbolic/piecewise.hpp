@@ -2,7 +2,7 @@
 
 #include "expression.hpp"
 
-namespace State {
+namespace diffurch {
 
 /*template <IsStateExpression Arg> struct Function_sign : StateExpression {*/
 /*  Arg arg;*/
@@ -85,4 +85,4 @@ namespace State {
 /*}*/
 /*};*/
 
-} // namespace State
+} // namespace diffurch

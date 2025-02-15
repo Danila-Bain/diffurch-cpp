@@ -3,7 +3,7 @@
 #include "expression.hpp"
 #include <math.h>
 
-namespace State {
+namespace diffurch {
 
 #define STATE_FUNCTION_OVERLOAD(func, func_derivative)                         \
   template <IsStateExpression Arg> struct Function_##func : StateExpression {  \
@@ -45,4 +45,4 @@ STATE_FUNCTION_OVERLOAD(log2,
 /*VARIABLE_OVERLOAD_FUNCTION_2(pow);*/
 /*VARIABLE_OVERLOAD_FUNCTION_2(atan2);*/
 
-} // namespace State
+} // namespace diffurch

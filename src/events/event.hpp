@@ -3,6 +3,8 @@
 #include "primitives.hpp"
 #include <type_traits>
 
+namespace diffurch {
+
 template <typename DetectHandler = std::nullptr_t,
           typename SaveHandler = std::nullptr_t,
           typename SetHandler = std::nullptr_t>
@@ -60,3 +62,4 @@ EVENT_WITHOUT_DETECTION(StartEvent); // Event befor integration start
 EVENT_WITHOUT_DETECTION(StopEvent);  // Event after integration stop
 
 /*CallEvent(nullptr, Var(callcount)++);*/
+} // namespace diffurch

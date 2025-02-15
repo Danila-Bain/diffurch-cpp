@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <limits>
 #include <tuple>
+
+namespace diffurch {
 // Special Set Handler
 struct StopIntegration {
 
@@ -19,6 +21,6 @@ template <typename Equation> auto SaveAll() {
   static constexpr size_t n =
       std::tuple_size<decltype(std::declval<Equation>().get_ic()(0.))>::value;
 
-  return std::tuple_cat(std::make_tuple(State::TimeVariable()),
-                        State::Variables<n>());
-};
+  return std::tuple_cat(std::make_tuple(TimeVariable()), Variables<n>());
+}
+}; // namespace diffurch

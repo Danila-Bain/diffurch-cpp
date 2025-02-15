@@ -1,5 +1,7 @@
 #pragma once
 
+namespace diffurch {
+
 #ifdef DEBUG
 #define DEBUG_ASSERT(x) assert(x)
 #else
@@ -25,3 +27,4 @@ inline T root_by_bisection(const F &f, T l, T h) {
   }
   return m;
 }
+} // namespace diffurch

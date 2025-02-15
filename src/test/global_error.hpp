@@ -6,12 +6,13 @@
 #include "../util/print.hpp"
 #include <iostream>
 
+namespace diffurch::test {
 template <typename RK = rk98>
 std::vector<double> global_error(auto equation, double initial_time,
                                  double final_time,
                                  const std::vector<double> &stepsizes) {
 
-  vector<ConstantStepsize> stepsize_controllers(stepsizes.size());
+  std::vector<ConstantStepsize> stepsize_controllers(stepsizes.size());
   std::transform(stepsizes.begin(), stepsizes.end(),
                  stepsize_controllers.begin(),
                  [](double stepsize) { return ConstantStepsize(stepsize); });
@@ -56,3 +57,4 @@ global_error(auto equation, double initial_time, double final_time,
                  });
   return error;
 }
+} // namespace diffurch::test
