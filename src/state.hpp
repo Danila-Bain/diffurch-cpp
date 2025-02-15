@@ -16,22 +16,27 @@ template <typename RK, typename InitialConditionHandler> struct State {
           0.))>::value;
 
   InitialConditionHandler ic;
+
   // independent variable
   double t_curr;
   double t_prev;
+  double t_step;
+  // should be a queue, it used only for interpolation
   std::vector<double> t_sequence;
 
   // dependent variable
   Vec<n> x_curr;
   Vec<n> x_prev;
+  // should be a queue, used only for interpolation
   vector<Vec<n>> x_sequence;
 
   // K values for interpolation, runge kutta method must support intrpolation
-  // in the future, queue should be used instead of vector
+  // in the future, queue should be used instead of vector, and the requred time
+  // span of that queue (i.e. the delay time, or )
   array<Vec<n>, RK::s> K_curr;
   vector<array<Vec<n>, RK::s>> K_sequence;
 
-  /*Equation *eq_ptr;*/
+  Vec<n> error_curr;
 
   State(double initial_time, InitialConditionHandler ic_)
       : ic(ic_), t_curr(initial_time), t_prev(t_curr), t_sequence({t_curr}),
@@ -41,7 +46,8 @@ template <typename RK, typename InitialConditionHandler> struct State {
     t_sequence.push_back(t_curr);
     x_sequence.push_back(x_curr);
     K_sequence.push_back(K_curr);
-    /*std::cout << x_sequence << std::endl << std::endl;*/
+
+    // pop_front from the queues until t_sequence[1] > t_curr - t_span;
   }
 
   template <size_t derivative_order = 0> auto eval(double t) const {
