@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../symbolic/vector.hpp"
 #include <tuple>
 #include <vector>
 
@@ -36,6 +37,9 @@ public:
   EventSaveInterface(std::tuple<SaveHandlers...> save_handlers_)
       : save_handlers(save_handlers_) {};
 
+  EventSaveInterface(State::Vector<SaveHandlers...> vector_)
+      : save_handlers(vector_.coordinates) {};
+
   std::tuple<std::conditional_t<true, std::vector<double>, SaveHandlers>...>
       saved;
 
@@ -43,6 +47,10 @@ public:
     save_impl(state, std::index_sequence_for<SaveHandlers...>{});
   }
 };
+
+template <typename... SaveHandlers>
+EventSaveInterface(State::Vector<SaveHandlers...>)
+    -> EventSaveInterface<SaveHandlers...>;
 
 template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
 
