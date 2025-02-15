@@ -54,20 +54,6 @@ struct EventSaveInterface<Vector<SaveHandlers...>>
       : EventSaveInterface<std::tuple<SaveHandlers...>>(vector_.coordinates) {};
 };
 
-// default constructor
-/*EventSaveInterface() -> EventSaveInterface<std::nullptr_t>;*/
-// generic constructor
-/*template <typename SaveHandler>*/
-/*EventSaveInterface(SaveHandler) -> EventSaveInterface<SaveHandler>;*/
-// tuple constructor
-/*template <typename... SaveHandlers>*/
-/*EventSaveInterface(const std::tuple<SaveHandlers...> &)*/
-/*    -> EventSaveInterface<std::tuple<SaveHandlers...>>;*/
-// vector constructor
-/*template <typename... SaveHandlers>*/
-/*EventSaveInterface(Vector<SaveHandlers...>)*/
-/*    -> EventSaveInterface<std::tuple<SaveHandlers...>>;*/
-
 template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
 
   SetHandler set_handler;

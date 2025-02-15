@@ -6,9 +6,8 @@
 #include <tuple>
 
 namespace diffurch {
-// Class that contains events that will run simultaniously
+
 template <template <typename...> typename EventType, typename... EventTypes>
-/*requires(is_kind_of_v<EventTypes, EventType> && ...)*/
 struct SimultaniousEvents {
   std::tuple<EventTypes...> event_tuple;
 
@@ -45,19 +44,6 @@ template <template <typename...> typename EventTemplate,
 SimultaniousEvents(const SimultaniousEvents<EventTemplate, EventTypes1...> &se1,
                    const SimultaniousEvents<EventTemplate, EventTypes2...> &se2)
     -> SimultaniousEvents<EventTemplate, EventTypes1..., EventTypes2...>;
-/*template <template <typename...> typename EventType, typename...
- * EventTypes1,*/
-/*          typename... EventTypes2>*/
-/*auto SimultaniousEvents(*/
-/*    const SimultaniousEvents<EventType, EventTypes1...> &se1,*/
-/*    const SimultaniousEvents<EventType, EventTypes2...> &se2) {*/
-/*  return SimultaniousEvents<EventType, EventTypes1..., EventTypes2...>(*/
-/*      std::tuple_cat(se1.event_tuple, se2.event_tuple));*/
-/*}*/
-
-// empty list
-/*SimultaniousEvents(const std::tuple<> &) ->
-   SimultaniousEvents<StopEvent>;*/
 
 template <template <typename...> typename EventType, typename... Ts>
 struct filter_events_impl {
@@ -113,7 +99,6 @@ template <typename... EventTypes> struct Events {
   filter_simultaneous_events_t<StopEvent, EventTypes...> stop_events;
 
   Events(EventTypes... events) : Events(std::make_tuple(events...)) {}
-  /*Events() : Events(std::tuple<>{}) {}*/
 
   Events(const std::tuple<EventTypes...> &events)
       : detection_events(filter_events<Event>(events)),
