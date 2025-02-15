@@ -1,6 +1,6 @@
-#include "../src/events.hpp"
-#include "../src/symbolic.hpp"
-#include "../src/util/print.hpp"
+#include "../../src/events.hpp"
+#include "../../src/symbolic.hpp"
+#include "../../src/util/print.hpp"
 #include <cstddef>
 #include <tuple>
 
@@ -19,10 +19,12 @@ struct StateLike {
   };
 } state;
 
+int error_count = 0;
+
 #define ASSERT(condition)                                                      \
   if (!(condition)) {                                                          \
     cout << "Assertion failed at " << __FILE__ << ":" << __LINE__ << endl;     \
-    return 1;                                                                  \
+    error_count++;                                                             \
   }
 
 int main() {
@@ -99,7 +101,6 @@ int main() {
       int step_counter{};
       auto e = StepEvent(nullptr, [&]() { step_counter++; });
 
-      cout << "nooo" << endl;
       e(s);
       e(s);
       e(s);
@@ -116,7 +117,6 @@ int main() {
       auto e = StopEvent(nullptr,
                          [&](const auto &state) { t_finish = state.t_curr; });
 
-      cout << "const" << endl;
       e(s);
 
       ASSERT(t_finish == 42.);
@@ -129,11 +129,8 @@ int main() {
       auto e =
           Event(nullptr, nullptr, [](auto &state) { state.x_curr[0] += 1; });
 
-      cout << "non const" << endl;
       e(s);
 
-      cout << state.x_curr << state.x_prev << endl;
-      cout << s.x_curr << s.x_prev << endl;
       // handler with auto& argument changes state, adding zero-step with those
       // changes
       ASSERT(s.x_curr[0] == state.x_curr[0] + 1);
@@ -152,6 +149,12 @@ int main() {
       e2(s);
       ASSERT(s.x_curr[0] == 0.01 + 1. + 1. && s.x_curr[1] == 2.);
     }
+  }
+
+  if (error_count == 0) {
+    cout << "All tests finished succesfully" << endl;
+  } else {
+    cout << error_count << " assertions failed." << endl;
   }
   return 0;
 }
