@@ -27,7 +27,7 @@ struct EventSaveInterface<std::tuple<SaveHandlers...>> {
 private:
   std::tuple<SaveHandlers...> save_handlers;
 
-  template <size_t... index>
+  template <std::size_t... index>
   void save_impl(const auto &state, std::index_sequence<index...>) {
     (std::get<index>(saved).push_back(std::get<index>(save_handlers)(state)),
      ...);

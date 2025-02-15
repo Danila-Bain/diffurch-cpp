@@ -2,6 +2,7 @@
 
 #include "../events.hpp"
 #include "expression.hpp"
+#include <cstddef> // for size_t
 
 namespace diffurch {
 
