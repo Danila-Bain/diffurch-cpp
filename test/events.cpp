@@ -10,7 +10,13 @@ using namespace diffurch::variables_xyz_t;
 
 struct StateLike {
   double t_curr = 42.;
+  double t_prev = 42.;
   array<double, 3> x_curr{0.01, 0.02, 0.03};
+  array<double, 3> x_prev{-0.01, -0.02, -0.03};
+  void make_zero_step() {
+    t_prev = t_curr;
+    x_prev = x_curr;
+  };
 } state;
 
 #define ASSERT(condition)                                                      \
@@ -84,6 +90,67 @@ int main() {
       e(state);
       ASSERT(e.saved == make_tuple(vector<double>{42}, vector<double>{0.01},
                                    vector<double>{0.02}));
+    }
+  }
+
+  { // Event setting
+    {
+      auto s = state;
+      int step_counter{};
+      auto e = StepEvent(nullptr, [&]() { step_counter++; });
+
+      cout << "nooo" << endl;
+      e(s);
+      e(s);
+      e(s);
+
+      ASSERT(step_counter == 3);
+
+      // handler with no arguments doesn't affect state
+      ASSERT(s.x_prev == state.x_prev && s.x_curr == state.x_curr);
+    }
+
+    {
+      auto s = state;
+      double t_finish;
+      auto e = StopEvent(nullptr,
+                         [&](const auto &state) { t_finish = state.t_curr; });
+
+      cout << "const" << endl;
+      e(s);
+
+      ASSERT(t_finish == 42.);
+      // handler with const auto& argument doesn't affect state
+      ASSERT(s.x_curr == state.x_curr && s.x_prev == state.x_prev);
+    }
+
+    {
+      auto s = state;
+      auto e =
+          Event(nullptr, nullptr, [](auto &state) { state.x_curr[0] += 1; });
+
+      cout << "non const" << endl;
+      e(s);
+
+      cout << state.x_curr << state.x_prev << endl;
+      cout << s.x_curr << s.x_prev << endl;
+      // handler with auto& argument changes state, adding zero-step with those
+      // changes
+      ASSERT(s.x_curr[0] == state.x_curr[0] + 1);
+      ASSERT(s.x_curr[1] == state.x_curr[1]);
+      ASSERT(s.x_prev == state.x_curr);
+    }
+
+    {
+      auto s = state;
+
+      auto e1 = Event(nullptr, nullptr, x << x + 1 && y << y + 1);
+      e1(s);
+      ASSERT(s.x_curr[0] == 0.01 + 1. && s.x_curr[1] == 0.02 + 1.);
+
+      auto e2 = Event(nullptr, nullptr, x << x + 1 | y << 2);
+      e2(s);
+      ASSERT(s.x_curr[0] == 0.01 + 1. + 1. && s.x_curr[1] == 2.);
     }
   }
   return 0;

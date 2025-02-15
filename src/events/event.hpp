@@ -2,6 +2,7 @@
 
 #include "primitives.hpp"
 #include <type_traits>
+#include <utility>
 
 namespace diffurch {
 
@@ -20,15 +21,28 @@ public:
         EventSetInterface<SetHandler>(set_handler), _detect(detect_handler) {};
 
   void operator()(auto &state) {
-    constexpr bool can_save = !std::is_same_v<SaveHandler, std::nullptr_t>;
-    constexpr bool can_set = !std::is_same_v<SetHandler, std::nullptr_t>;
 
-    if constexpr (can_save) {
+    constexpr bool is_saving = requires { this->save(state); };
+
+    constexpr bool is_setting_no_args = requires { this->set(); };
+    // rvalue binds only if set accepts state by copy or const reference
+    constexpr bool is_setting_const_state =
+        requires { this->set(std::move(state)); };
+    constexpr bool is_setting_non_const_state =
+        (requires { this->set(state); }) && !is_setting_const_state;
+
+    if constexpr (is_saving) {
       this->save(state);
     }
-    if constexpr (can_set) {
+
+    if constexpr (is_setting_no_args) {
+      this->set();
+    } else if constexpr (is_setting_const_state) {
       this->set(state);
-      if constexpr (can_save) {
+    } else if constexpr (is_setting_non_const_state) {
+      state.make_zero_step();
+      this->set(state);
+      if constexpr (is_saving) {
         this->save(state);
       }
     }

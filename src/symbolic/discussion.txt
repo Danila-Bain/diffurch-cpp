@@ -60,4 +60,11 @@ When should additional conditions for events be checked?
     is not met, but somewhere in between it does, meanwhile condition 
 
 
-          
+
+Event set handler behavior has to differ depending on whether it is modifying the state or not. I.e., 
+1. in `Event(...,...,[&counter](){counter++;})` setting sould not affect the state or saving process;
+2. in `Event(...,...,[](const auto& state){...})` setting also sould not affect the state or saving;
+3. in `Event(...,...,[](auto& state){...})` should make zero step upon event, then set state variables based on prev values, saving both pre-set and post-set states. With exception to CallEvent, which is the only mid-step event.
+
+Compile-time detecting operator()(void) call is ok.
+But differentiating between const auto and non-const auto is wtf.

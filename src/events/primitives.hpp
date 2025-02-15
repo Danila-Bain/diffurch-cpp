@@ -2,6 +2,8 @@
 
 #include "../symbolic/vector.hpp"
 #include <tuple>
+#include <type_traits>
+#include <utility>
 #include <vector>
 namespace diffurch {
 template <typename SaveHandler = std::nullptr_t> struct EventSaveInterface {
@@ -55,19 +57,8 @@ struct EventSaveInterface<Vector<SaveHandlers...>>
 };
 
 template <typename SetHandler = std::nullptr_t> struct EventSetInterface {
-
-  SetHandler set_handler;
-
-  EventSetInterface(SetHandler set_handler_) : set_handler(set_handler_) {};
-
-  void set(auto &state)
-    requires(!std::is_same_v<SetHandler, std::nullptr_t>)
-  {
-    if constexpr (requires { set_handler(state); })
-      set_handler(state);
-    else
-      set_handler();
-  }
+  SetHandler set;
+  EventSetInterface(const SetHandler &set_) : set(set_) {};
 };
 
 template <typename DetectionHandler = std::nullptr_t>

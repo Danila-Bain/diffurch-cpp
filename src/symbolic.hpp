@@ -1,6 +1,7 @@
 #pragma once
 
 #include "symbolic/event_detection.hpp"
+#include "symbolic/event_set_handler.hpp"
 #include "symbolic/expression.hpp"
 #include "symbolic/math.hpp"
 #include "symbolic/operators.hpp"

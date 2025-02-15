@@ -50,6 +50,13 @@ template <typename RK, typename InitialConditionHandler> struct State {
     // pop_front from the queues until t_sequence[1] > t_curr - t_span;
   }
 
+  void make_zero_step() {
+    // t_step is not updated, because it is the length of next step
+    t_prev = t_curr;
+    x_prev = x_curr;
+    push_back_curr();
+  }
+
   template <size_t derivative_order = 0> auto eval(double t) const {
     if (t <= t_sequence[0]) { // initial_condition case
       // here we separate two cases, because it is rare that we need to define

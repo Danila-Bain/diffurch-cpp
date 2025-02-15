@@ -7,6 +7,7 @@ set(SOURCES
   test/ndde_plot.cpp
   test/global_error.cpp
   test/events.cpp
+  test/constness.cpp
 )
 
 execute_process(
