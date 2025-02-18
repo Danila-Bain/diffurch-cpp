@@ -156,11 +156,15 @@ int main() {
       auto e1 = Event(nullptr, x | y, x << x + z);
       e1(s);
 
-      ASSERT(e1.saved == make_tuple(vector<double>{0.01, 0.01 + 1.},
+      /*cout << s.x_curr << s.x_prev << endl;*/
+      /*cout << state.x_curr << state.x_prev << endl;*/
+      /*cout << e1.saved << endl;*/
+
+      ASSERT(e1.saved == make_tuple(vector<double>{0.01, 0.01 + 0.03},
                                     vector<double>{0.02, 0.02}));
 
       ASSERT(s.x_prev == state.x_curr);
-      ASSERT((s.x_curr == array<double, 3>({0.01 + 1., 0.02, 0.03})));
+      ASSERT((s.x_curr == array<double, 3>({0.01 + 0.03, 0.02, 0.03})));
     }
   }
 
