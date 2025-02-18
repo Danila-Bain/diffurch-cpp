@@ -4,10 +4,12 @@ set(CMAKE_CXX_STANDARD 23)
 
 
 set(SOURCES
-  test/ndde_plot.cpp
+  examples/ndde_plot.cpp
+  examples/harmonic_oscillator.cpp
   test/global_error.cpp
   test/api/events.cpp
   test/educational/constness.cpp
+  test/educational/describe.cpp
 )
 
 execute_process(

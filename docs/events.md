@@ -39,7 +39,14 @@ There are two alternatives:
 
 ## Set Handler structure
 
-```SetHandler``` must implement a ```void operator()(void)``` or ```void operator()(auto &state)```. If both are implemented, only the later is used.
+```SetHandler``` must implement either
+- `void operator()(void)`, or
+- `void operator()(const auto &state)`, or
+- `void operator()(auto &state)`.
+
+If multiple defined, only one of them is used, in that order. Behavior differs for `void`, `const auto&`, and `auto&` argument signature. For `void` and `const auto&`, it is guaranteed, that state itself is not modified, hence the set handler is just called when event triggers. The situation is different for `auto&` argument, which indicated that the state is modified. In that case, state is forced to make a zero step, such that previous state equals to the current state, then the current step is modified by the set handler, reading only the previous state data. 
+
+For that reason, it is not yet possible to modify state for a CallEvent, because it is triggered mid-step, usually multiple times, and modifying the state in that context would ruin the whole integration procedure.
 
 ## Special event types
 

@@ -95,8 +95,11 @@ The class `VariableAt<size_t coordinate, IsStateExpression Arg, size_t derivativ
 ```
 State::TimeVariable t;
 State::Variable<0> x;
+double tau = 3;
 
-auto x_delayed = x(t - 1.);
+auto x_delayed1 = x(t - 1);
+auto x_delayed2 = x(t - tau);
+
 ```
 Here ```x_delayed``` is of type `State::VariableAt<0, State::Sub<State::TimeVaraible, State::Constant>, 0>`.
 
@@ -106,6 +109,7 @@ The class ```Vector<typename...>```, that is initialized as `State::Vector(Dx, -
 
 For derived classes for `StateExpression`, `operator|` is overloaded such that vector of expressions can be written as `Dx | - sin(x)` or `sigma * (x - y) | x * (rho - z) - y | x * y - beta * z`.
 
+Operator `|` has low precedence, so no parentheses are ever needed, but `(x | y | z)` also looks good.
 
 ### Math 
 
@@ -118,27 +122,47 @@ Additionally, for derived classes for `StateExpressions`, the functions `sin`,`c
 
 For all classes the differential operator `D<size_t derivative_order = 1>` is defined, which is a function that takes some state expression, and returns a state expression, corresponding to its analytical derivative. It is defined for all state expressions mentioned above.
 
+Examples:
+```c++
+State::TimeVariable t;
+State::Variable<0> x;
+
+auto expr0 = D<2>(x); // equivalent to Variable<0, 2>();
+auto expr1 = sin(t * x);
+auto expr2 = D(expr1); // equivalent to cos(t * x) * (x + t * D(x))
+```
 
 ## StateBoolExpression
 
 State bool expressions are just like state expressions, but they only evaluate to bool and can be used with logical operators `!`, `||`, `&&`, and `!=` for xor.
 
-## Events (unimplemented)
+## Events 
 
-For events, detection handler, save handler, and set handler are to be specified.
+For events, detection handler, save handler, and set handler are yet to be specified.
 
-For detection, the syntax is this:
-```
-x >> 0 && y < 0
-```
-this corresponds to an event, that triggers when x is zero and y is negative. For events of directional zero crossing, use `x ^ 0` for crossing zero from below, and `0 ^ x` for crossing zero from above. I don't really like this syntax, it kinda cool but seems random, and may be hard to remember if not used too often, unlike `x << -0.9*x` syntax for set handler, becuase it is akin stream syntax.
-
-Maybe here it is more appropriate to just make a named function like `When(x == 0)`, that, by template magic, will differentiate between
-`x == 0` which is really `State::Equal(x, 0)`, `x >= y` which is really `State::GreaterThanEqual(x, y)`, etc, so the syntax becomes
+### Detection handler (unimplemented)
+For event detection there is a function `When(x == 0)`, that, by template magic, will differentiate between
+`x == 0` which is really `diffurch::Equal(x, 0)`, `x >= y` which is really `State::GreaterThanEqual(x, y)`, etc, so the syntax becomes
 ```
 When(x == 0) && y < 0
 ```
 
+When should additional conditions for events be checked?
+1. After event location
+This approach ensures that no events are missed, 
+but introducess many extra event location procedures.
+This overhead may not be that bad, since even without restrictions
+events are supposed to be relatively rare with respect to other integration steps.
+2. Before event location, at detection stage.
+This way no extra location procedures are executed, but in some edge cases
+events can be missed, i.e when for t_curr and t_prev condition
+is not met, but somewhere in between it does.
+
+For conditions that are checked after location the syntax is `When(x == 0) && y < 0`, for conditions that are checked before location the syntax is `When(x == 0) & y < 0`.
+
+Or, alternatively, it can be implemented such that condition `y <= 0` is checked only for location, but `y < 0` is checked for detection and location (being less inclusive), and combinations like `y < 0 && z >= 0` are treated like `y <= 0 && z >= 0`.
+
+### Save handler
 
 For save handler, the syntax is:
 ```
@@ -149,9 +173,8 @@ or
 t | x | y | z
 ```
 
+### Set handler
 For set handler, the syntax is
 ```
 x << -0.9*x && y << y + x
 ```
-
-(this is just great)
