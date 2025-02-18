@@ -23,7 +23,9 @@ namespace diffurch {
       return l(state, t) op r(state, t);                                       \
     }                                                                          \
     auto operator()(double t) const { return l(t) op r(t); }                   \
-    auto get_events() const { return Events(l.get_events(), r.get_events()); } \
+    auto get_events() const {                                                  \
+      return std::tuple_cat(l.get_events(), r.get_events());                   \
+    }                                                                          \
   };                                                                           \
   template <Is##argument_class L, Is##argument_class R>                        \
   auto operator op(L l, R r) {                                                 \

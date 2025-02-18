@@ -1,6 +1,5 @@
 #pragma once
 
-/*#include "../events.hpp"*/
 #include "expression.hpp"
 #include <cstddef> // for size_t
 #include <tuple>
@@ -41,7 +40,7 @@ template <IsStateExpression... Coordinates> struct Vector : StateExpression {
   }
   auto get_events() const {
     return [&]<size_t... Is>(std::index_sequence<Is...>) {
-      return Events(std::get<Is>(coordinates).get_events()...);
+      return std::make_tuple(std::get<Is>(coordinates).get_events()...);
     }(std::make_index_sequence<sizeof...(Coordinates)>{});
   }
 };

@@ -3,6 +3,7 @@
 #include "../events.hpp"
 #include "expression.hpp"
 #include <cstddef> // for size_t
+#include <tuple>
 
 namespace diffurch {
 
@@ -19,7 +20,7 @@ template <IsNotStateExpression T = double> struct Constant : StateExpression {
     return value;
   }
   T operator()([[maybe_unused]] double t) const { return value; }
-  static auto get_events() { return Events(); }
+  static auto get_events() { return std::make_tuple(); }
 };
 
 template <size_t derivative = 1, IsNotStateExpression T = double>
@@ -38,7 +39,7 @@ struct TimeVariable : StateExpression {
     return t;
   }
   static auto operator()(double t) { return t; }
-  static auto get_events() { return Events(); }
+  static auto get_events() { return std::make_tuple(); }
 };
 
 template <size_t derivative = 1> constexpr auto D(const TimeVariable &t) {
@@ -90,7 +91,7 @@ struct Variable : StateExpression {
     return VariableAt<coordinate, Arg, derivative>(arg);
   }
 
-  static auto get_events() { return Events(); }
+  static auto get_events() { return std::make_tuple(); }
 };
 
 template <size_t coordinate> struct Variable<coordinate, 0> : StateExpression {
@@ -114,7 +115,7 @@ template <size_t coordinate> struct Variable<coordinate, 0> : StateExpression {
     return VariableAt<coordinate, Arg, 0>(arg);
   }
 
-  static auto get_events() { return Events(); }
+  static auto get_events() { return std::make_tuple(); }
 };
 
 template <size_t derivative = 1, size_t var_coordinate = -1,

@@ -9,6 +9,7 @@
 #include <boost/preprocessor.hpp>
 #include <cstddef>
 #include <limits>
+#include <tuple>
 
 #include "rk_tables/rk98.hpp"
 
@@ -20,7 +21,7 @@ namespace diffurch {
 // that inherit solver with themselves.
 template <typename Equation> struct Solver {
 
-  auto get_events() { return Events(); }
+  auto get_events() { return std::make_tuple(); }
 
   template <typename RK = rk98, typename StepsizeControllerT = ConstantStepsize>
   auto
@@ -28,7 +29,7 @@ template <typename Equation> struct Solver {
            StepsizeControllerT stepsize_controller = ConstantStepsize(0.1)) {
 
     return solution<RK>(initial_time, final_time, stepsize_controller,
-                        Events(StepEvent(SaveAll<Equation>())));
+                        std::make_tuple(StepEvent(SaveAll<Equation>())));
   }
 
   template <typename RK = rk98, typename StepsizeControllerT,
@@ -41,8 +42,8 @@ template <typename Equation> struct Solver {
     auto ic = self->get_ic();
     static constexpr size_t n = std::tuple_size<decltype(ic(0.))>::value;
 
-    auto events =
-        Events(Events(self->get_events(), lhs.get_events()), additional_events);
+    auto events = Events(std::tuple_cat(self->get_events(), lhs.get_events(),
+                                        additional_events));
     // todo: make Events contructor with arbitrary arguments
 
     auto state = State<RK, decltype(ic)>(initial_time, ic);
