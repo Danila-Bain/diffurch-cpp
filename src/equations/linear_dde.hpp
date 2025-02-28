@@ -128,22 +128,21 @@ struct LinearNDDE1Sin : Solver<LinearNDDE1Sin> {
 
   static constexpr auto t = TimeVariable();
   static constexpr auto x = Variable<0>();
-  static constexpr auto Dx = Variable<0, 1>();
 
   static const bool ic_is_true_solution = true;
 
   auto get_lhs() {
     using std::tan, std::cos, std::sin;
     double a = -k * tan(k * tau);
-    double b = k / cos(k * tau);
-    return Vector(a * x + b * Dx(t - tau));
+    double b = 1 / cos(k * tau);
+    return Vector(a * x + b * D(x)(t - tau));
   }
   auto get_ic() { return Vector(sin(k * t)); }
 
   std::string repr(bool latex = true) {
     using std::tan, std::cos, std::sin;
     double a = -k * tan(k * tau);
-    double b = k / cos(k * tau);
+    double b = 1 / cos(k * tau);
     std::string aa = std::format("{:.3g}", a);
     std::string bb = std::format("{:+.3g}", b);
     std::string tt = std::format("{:.3g}", tau);
