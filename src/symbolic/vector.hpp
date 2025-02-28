@@ -1,6 +1,7 @@
 #pragma once
 
 #include "expression.hpp"
+#include "variables.hpp"
 #include <cstddef> // for size_t
 #include <tuple>
 
@@ -52,6 +53,11 @@ template <IsStateExpression L, IsStateExpression R> auto operator|(L l, R r) {
 template <IsStateExpression... L, IsStateExpression R>
 auto operator|(Vector<L...> l, R r) {
   return Vector(std::tuple_cat(l.coordinates, std::make_tuple(r)));
+}
+
+template <IsStateExpression L, IsNotStateExpression R>
+auto operator|(L l, R r) {
+  return l | Constant<R>(r);
 }
 
 template <size_t derivative = 1, IsStateExpression... Coordinates>

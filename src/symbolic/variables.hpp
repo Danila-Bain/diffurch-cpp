@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../events.hpp"
 #include "expression.hpp"
 #include <cstddef> // for size_t
 #include <tuple>
@@ -10,7 +9,8 @@ namespace diffurch {
 template <IsNotStateExpression T = double> struct Constant : StateExpression {
   T value;
 
-  Constant(const T &val) : value(val) {}
+  Constant(T val) : value(val) {}
+
   operator T() const { return value; }
 
   T operator()([[maybe_unused]] const auto &state) const { return value; }
