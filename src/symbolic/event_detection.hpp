@@ -15,6 +15,8 @@ template <typename Arg> struct EqualEvent : StateDetectExpression {
   bool detect(const auto &state) const {
     auto curr = arg(state);
     auto prev = arg.prev(state);
+    // std::cout << "detecting zero cross between " << prev << " and " << curr
+    // << std::endl;
     return (curr * prev < 0) || curr == 0;
     // benchmark against
     /*auto l_curr = l(state);*/

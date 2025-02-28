@@ -9,17 +9,19 @@ namespace diffurch {
 template <typename DetectHandler = std::nullptr_t,
           typename SaveHandler = std::nullptr_t,
           typename SetHandler = std::nullptr_t>
-struct Event : EventSaveInterface<SaveHandler>, EventSetInterface<SetHandler> {
+struct Event : EventDetectionInterface<DetectHandler>,
+               EventSaveInterface<SaveHandler>,
+               EventSetInterface<SetHandler> {
 private:
-  DetectHandler _detect;
-
 public:
   Event(const DetectHandler &detect_handler = DetectHandler{},
         const SaveHandler &save_handler = SaveHandler{},
         const SetHandler &set_handler = SetHandler{})
       : EventSaveInterface<SaveHandler>(save_handler),
-        EventSetInterface<SetHandler>(set_handler), _detect(detect_handler) {};
+        EventSetInterface<SetHandler>(set_handler),
+        EventDetectionInterface<DetectHandler>(detect_handler) {};
 
+  // Event action, constiting of calling save and set handlers.
   void operator()(auto &state) {
 
     constexpr bool is_saving = requires { this->save(state); };

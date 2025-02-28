@@ -95,9 +95,14 @@ template <typename Equation> struct Solver {
 
       if (double t_event = events.locate(state);
           t_event < std::numeric_limits<double>::max()) {
+        double save_t_step = state.t_step;
+
         state.t_step = t_event - state.t_prev;
         runge_kutta_step();
         events.located_event(state);
+
+        // restore time step (important for constnat time step)
+        state.t_step = save_t_step;
       }
 
       state.push_back_curr();

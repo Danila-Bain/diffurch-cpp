@@ -76,18 +76,31 @@ template <typename RK, typename InitialConditionHandler> struct State {
       int i = std::distance(
           t_sequence.begin(),
           std::upper_bound(t_sequence.begin(), t_sequence.end(), t));
-      double h = t_sequence[i] - t_sequence[i - 1];
-      double theta = (t - t_sequence[i - 1]) / h;
-      /**/
-      /*auto result = h * dot(eval_array<derivative_order>(RK::bs, theta),*/
-      /*                      K_sequence[i - 1], RK::s);*/
-      auto result = dot(eval_array<derivative_order>(RK::bs, theta),
-                        K_sequence[i - 1], RK::s);
-      if constexpr (derivative_order == 0)
-        result = x_sequence[i - 1] + h * result;
-      else
-        result = pow(h, 1 - derivative_order) * result;
-      return result;
+      // std::cout << i << "/" << t_sequence.size() << std::endl;
+
+      if (i == t_sequence.size()) {
+        double h = t_curr - t_prev;
+        double theta = (t - t_prev) / h;
+
+        auto result =
+            dot(eval_array<derivative_order>(RK::bs, theta), K_curr, RK::s);
+        if constexpr (derivative_order == 0)
+          result = x_prev + h * result;
+        else
+          result = pow(h, 1 - derivative_order) * result;
+        return result;
+      } else {
+        double h = t_sequence[i] - t_sequence[i - 1];
+        double theta = (t - t_sequence[i - 1]) / h;
+
+        auto result = dot(eval_array<derivative_order>(RK::bs, theta),
+                          K_sequence[i - 1], RK::s);
+        if constexpr (derivative_order == 0)
+          result = x_sequence[i - 1] + h * result;
+        else
+          result = pow(h, 1 - derivative_order) * result;
+        return result;
+      }
     }
   }
 };

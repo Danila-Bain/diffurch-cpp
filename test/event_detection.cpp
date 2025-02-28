@@ -28,12 +28,33 @@ struct ConstRHS : Solver<ConstRHS> {
 
 int main(int, char *[]) {
 
-  auto eq = ConstRHS(1., -1.);
-
-  auto sol = eq.solution(-1, 1, ConstantStepsize(0.12),
-                         std::make_tuple(Event(When(x == 0), t)));
-
-  std::cout << sol << std::endl;
-
+  {
+    auto eq = ConstRHS(1., -1.);
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.4),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+  {
+    auto eq = ConstRHS(1., -1.);
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.500),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+  {
+    auto eq = ConstRHS(-1., 1.);
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.49),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+  {
+    auto eq = ConstRHS(-1., 1.);
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.500),
+                    std::make_tuple(Event(When(x == 0)), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
   return 0;
 }
