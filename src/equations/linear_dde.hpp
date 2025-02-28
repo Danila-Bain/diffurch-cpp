@@ -17,7 +17,7 @@ struct LinearDDE1Exp : Solver<LinearDDE1Exp> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     using std::exp;
     double a = k * (1 - theta);
     double b = k * exp(tau) * theta;
@@ -52,7 +52,7 @@ struct LinearDDE1Sin : Solver<LinearDDE1Sin> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     using std::tan, std::sin;
     double a = k / tan(k * tau);
     double b = -k / sin(k * tau);
@@ -90,7 +90,7 @@ struct LinearDDE2Sin : Solver<LinearDDE2Sin> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     using std::cos, std::sin;
     double a = -k * k * (1 - theta);
     double b = -theta * k * k * cos(k * tau);
@@ -131,7 +131,7 @@ struct LinearNDDE1Sin : Solver<LinearNDDE1Sin> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     using std::tan, std::cos, std::sin;
     double a = -k * tan(k * tau);
     double b = 1 / cos(k * tau);

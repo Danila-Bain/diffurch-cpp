@@ -16,7 +16,7 @@ struct Lorenz : Solver<Lorenz> {
 
   static const bool ic_is_true_solution = false;
 
-  auto get_lhs() {
+  auto get_rhs() {
     using namespace diffurch::variables_xyz_t;
     return sigma * (y - x) | x * (rho - z) - y | x * y - beta * z;
   }

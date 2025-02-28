@@ -12,7 +12,7 @@ struct Linear1 : Solver<Linear1> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return Vector(k * x); }
+  auto get_rhs() { return Vector(k * x); }
   auto get_ic() { return Vector(exp(k * t)); }
 
   std::string repr(bool latex = true) {

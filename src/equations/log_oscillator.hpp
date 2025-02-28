@@ -13,7 +13,7 @@ struct LogOscillator : Solver<LogOscillator> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     return Vector(Dx, w * w * x * (1 - log(x) - log(x) * log(x)));
   }
   auto get_ic() {

@@ -13,7 +13,7 @@ struct Relay1 : Solver<Relay1> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() {
+  auto get_rhs() {
     double A = (a + b) / 2;
     double B = (a - b) / 2;
     return Vector(A + B * sign(x));
@@ -39,7 +39,7 @@ struct Relay2 : Solver<Relay2> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return Vector(Dx, -sign(x)); }
+  auto get_rhs() { return Vector(Dx, -sign(x)); }
   auto get_ic() {
     return Periodic(-0.5 * T, 0.5 * T,
                     Piecwise(t < 0.,

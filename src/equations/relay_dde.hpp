@@ -15,7 +15,7 @@ struct RelayDDE1 : Solver<RelayDDE1> {
 
   static const bool ic_is_true_solution = true;
 
-  auto get_lhs() { return Vector(k * x + alpha * sign(x(t - tau))); }
+  auto get_rhs() { return Vector(k * x + alpha * sign(x(t - tau))); }
   auto get_ic() {
     double a, b;
     if (k == 0) {

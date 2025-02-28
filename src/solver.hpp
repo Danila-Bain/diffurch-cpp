@@ -38,11 +38,11 @@ template <typename Equation> struct Solver {
                 StepsizeControllerT stepsize_controller,
                 AdditionalEventsT additional_events) {
     auto self = static_cast<Equation *>(this);
-    auto lhs = self->get_lhs();
+    auto rhs = self->get_rhs();
     auto ic = self->get_ic();
     static constexpr size_t n = std::tuple_size<decltype(ic(0.))>::value;
 
-    auto events = Events(std::tuple_cat(self->get_events(), lhs.get_events(),
+    auto events = Events(std::tuple_cat(self->get_events(), rhs.get_events(),
                                         additional_events));
     // todo: make Events contructor with arbitrary arguments
 
@@ -57,7 +57,7 @@ template <typename Equation> struct Solver {
         state.t_curr = state.t_prev + state.t_step * RK::c[i];
         state.x_curr =
             state.x_prev + state.t_step * dot(RK::a[i], state.K_curr, i);
-        state.K_curr[i] = lhs(state);
+        state.K_curr[i] = rhs(state);
         events.call_events(state);
       }
       delta_x = state.t_step * dot(RK::b, state.K_curr, RK::s);

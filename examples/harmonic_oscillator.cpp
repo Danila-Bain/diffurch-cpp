@@ -18,7 +18,7 @@ struct HarmonicOscillator : Solver<HarmonicOscillator> {
   double k;
   HarmonicOscillator(double k_ = 1.) : k(k_) {};
 
-  auto get_lhs() { return Dx | -k * k * x; }
+  auto get_rhs() { return Dx | -k * k * x; }
   auto get_ic() { return sin(k * t) | k * cos(k * t); }
   auto get_events() { return std::make_tuple(StepEvent(t | x | Dx)); }
 };
