@@ -1,7 +1,7 @@
 
 # Diffurch
 
-Diffurch is an in-development header-only library that implements numerical methods for solving differential equations, with main focus on the applicability to many types of problems and usability. Having in mind that main users would be mathematicians. 
+Diffurch is an in-development header-only c++ library that implements numerical methods for solving differential equations, with main focus on the applicability to many types of problems and usability. Having in mind that main users would be mathematicians. 
 
 The features (will) include:
 - symbolic definition of the right hand side of the equation
