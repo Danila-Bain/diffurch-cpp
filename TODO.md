@@ -26,3 +26,9 @@ The list below represents a combination of high-priority work, nice-to-have feat
 # Performance
 
 - Add performance tests, which are supposed to be run to compare versions.
+- Modify the state class, such that data sequence is stored in a queue instead of vector.
+
+
+# Known Issues
+
+- For delayed equations, if stepsize is smaller than the delay, it is not handled and results in program termination.
