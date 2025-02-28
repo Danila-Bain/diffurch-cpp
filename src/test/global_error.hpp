@@ -42,7 +42,8 @@ global_error(auto equation, double initial_time, double final_time,
             },
             res);
 
-        /*cout << res << endl;*/
+        // std::cout << res << std::endl;
+        // std::cout << stepsize_controller.initial_stepsize << std::endl;
         return norm(x - true_x) / (1 + norm(true_x));
       });
   return error;
