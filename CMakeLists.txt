@@ -6,8 +6,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(SOURCES
   examples/ndde_plot.cpp
   examples/harmonic_oscillator.cpp
+  examples/lorenz.cpp
   test/global_error.cpp
   test/api/events.cpp
+  test/api/hist.cpp
   test/educational/constness.cpp
   test/educational/describe.cpp
 )
@@ -40,7 +42,7 @@ foreach(SOURCE IN LISTS SOURCES)
     add_executable(${EXE_NAME} ${SOURCE})
     message(STATUS ${EXE_NAME})
     target_include_directories(${EXE_NAME} PRIVATE ${PYTHON_INCLUDE_PATH} ${PYTHON_NUMPY_INCLUDE_PATH})
-    target_link_libraries(${EXE_NAME} PRIVATE ${PYTHON_LIBRARY_PATH})
+    target_link_libraries(${EXE_NAME} PRIVATE ${PYTHON_LIBRARY_PATH} matplot)
 endforeach()
 
 
