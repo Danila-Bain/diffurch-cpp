@@ -1,5 +1,6 @@
 #pragma once
 
+#include "symbolic/delta_function.hpp"
 #include "symbolic/event_detection.hpp"
 #include "symbolic/event_set_handler.hpp"
 #include "symbolic/expression.hpp"

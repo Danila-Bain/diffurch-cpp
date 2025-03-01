@@ -13,7 +13,7 @@
 
 namespace plt = matplotlibcpp;
 using namespace diffurch;
-using namespace variables_x_t;
+using namespace variables_xyz_t;
 
 int main(int, char *[]) {
 
@@ -114,6 +114,18 @@ int main(int, char *[]) {
                            std::tuple_cat(std::make_tuple(StepEvent(t | x))));
 
     std::cout << "tPiecewise:" << std::endl;
+    std::cout << sol << std::endl; //
+  }
+  {
+    struct DeltaEq : Solver<DeltaEq> {
+      auto get_rhs() { return delta(t) | delta(t - 1); }
+      auto get_ic() { return Constant(0.) | Constant(0.); }
+    } eq;
+    auto sol =
+        eq.solution(-1, 2, ConstantStepsize(0.3),
+                    std::tuple_cat(std::make_tuple(StepEvent(t | x | y))));
+
+    std::cout << "DeltaEq:" << std::endl;
     std::cout << sol << std::endl; //
   }
   return 0;
