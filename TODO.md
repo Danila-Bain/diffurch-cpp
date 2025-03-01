@@ -31,6 +31,10 @@ The list below represents a combination of high-priority work, nice-to-have feat
 - PI vs I stepsize controllers (now only "I" is available in the form of AdaptiveStepsize)
 - AdaptiveStepsize needs testing
 
+# Other Ideas 
+
+- For now, the "solution" function is provided for equations by means of curiously recurring template pattern. I think it would be usefull to provide several interfaces, such as simply define a template function, that accepts equation class object as a parameter (which also would have to define "get_ic" and "get_rhs" methods).
+
 # Known Issues
 
 - For delayed equations, if stepsize is smaller than the delay, it is not handled and results in program termination.
