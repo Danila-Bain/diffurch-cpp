@@ -32,4 +32,24 @@ inline T root_by_bisection(const F &f, T l, T r) {
   // return m;
   return std::max(r, l);
 }
+
+template <typename F, typename T>
+inline T bool_change_by_bisection(const F &f, T l, T r) {
+
+  if (f(l))
+    std::swap(l, r); // such that f(l) == false, f(r) == true
+
+  T m;
+  for (int i = 0; i < 50; i++) {
+    m = (l + r) * 0.5;
+    if (f(m)) {
+      r = m;
+    } else {
+      l = m;
+    }
+  }
+  // return m;
+  return std::max(r, l);
+}
+
 } // namespace diffurch

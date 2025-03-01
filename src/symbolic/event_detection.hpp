@@ -8,9 +8,26 @@
 
 namespace diffurch {
 
-template <typename Arg> struct EqualEvent : StateDetectExpression {
+template <IsStateBoolExpression Arg> struct WhenSwitch : StateDetectExpression {
   Arg arg;
-  EqualEvent(Arg arg_) : arg(arg_) {};
+  WhenSwitch(Arg arg_) : arg(arg_) {};
+
+  bool detect(const auto &state) const { return arg(state) != arg.prev(state); }
+
+  double locate(const auto &state) const {
+    if (detect(state)) {
+      return bool_change_by_bisection(
+          [this, &state](double t) { return arg(state, t); }, state.t_prev,
+          state.t_curr);
+    } else {
+      return std::numeric_limits<double>::max();
+    }
+  }
+};
+
+template <IsStateExpression Arg> struct WhenZeroCross : StateDetectExpression {
+  Arg arg;
+  WhenZeroCross(Arg arg_) : arg(arg_) {};
 
   bool detect(const auto &state) const {
     auto curr = arg(state);
@@ -18,7 +35,8 @@ template <typename Arg> struct EqualEvent : StateDetectExpression {
     // std::cout << "detecting zero cross between " << prev << " and " << curr
     // << std::endl;
     return (curr * prev < 0) || curr == 0;
-    // benchmark against
+    // benchmark against (the following doesn't have additional implicit
+    // substractions)
     /*auto l_curr = l(state);*/
     /*auto r_curr = r(state);*/
     /*auto l_prev = l.prev(state);*/
@@ -38,38 +56,37 @@ template <typename Arg> struct EqualEvent : StateDetectExpression {
   }
 };
 
-template <typename Arg> struct AboveEvent : EqualEvent<Arg> {
-
-  using EqualEvent<Arg>::arg;
-  using EqualEvent<Arg>::EqualEvent;
-  using EqualEvent<Arg>::locate;
-
+template <IsStateExpression Arg>
+struct ZeroCrossFromBelowEvent : WhenZeroCross<Arg> {
+  using WhenZeroCross<Arg>::arg;
+  using WhenZeroCross<Arg>::EqualEvent;
+  using WhenZeroCross<Arg>::locate;
   bool detect(const auto &state) const {
     return arg(state) >= 0 && arg.prev(state) < 0;
   }
 };
+template <IsStateExpression Arg>
+struct WhenZeroCrossFromAboveEvent : WhenZeroCross<Arg> {
+  using WhenZeroCross<Arg>::arg;
+  using WhenZeroCross<Arg>::EqualEvent;
+  using WhenZeroCross<Arg>::locate;
+  bool detect(const auto &state) const {
+    return arg(state) <= 0 && arg.prev(state) > 0;
+  }
+};
 
 // support for When(x == 0) or When(x > 0) syntax
-template <IsStateExpression L, IsStateExpression R>
-auto When(const Equal<L, R> &bool_expr) {
-  return EqualEvent(bool_expr.l - bool_expr.r);
-}
-template <IsStateExpression L, IsStateExpression R>
-auto When(const Greater<L, R> &bool_expr) {
-  return AboveEvent(bool_expr.l - bool_expr.r);
-}
-template <IsStateExpression L, IsStateExpression R>
-auto When(const GreaterEqual<L, R> &bool_expr) {
-  return AboveEvent(bool_expr.l - bool_expr.r);
-}
-template <IsStateExpression L, IsStateExpression R>
-auto When(const Less<L, R> &bool_expr) {
-  return AboveEvent(bool_expr.r - bool_expr.l);
-}
-template <IsStateExpression L, IsStateExpression R>
-auto When(const LessEqual<L, R> &bool_expr) {
-  return AboveEvent(bool_expr.r - bool_expr.l);
-}
+#define STATE_CROSS_EVENT_FROM_COMP(comparison_operator, cross_event_type)     \
+  template <IsStateExpression L, IsStateExpression R>                          \
+  auto When(const comparison_operator<L, R> &bool_expr) {                      \
+    return cross_event_type(bool_expr.l - bool_expr.r);                        \
+  }
+
+STATE_CROSS_EVENT_FROM_COMP(Equal, WhenZeroCross);
+STATE_CROSS_EVENT_FROM_COMP(Greater, WhenZeroCrossFromBelow);
+STATE_CROSS_EVENT_FROM_COMP(GreaterEqual, WhenZeroCrossFromBelow);
+STATE_CROSS_EVENT_FROM_COMP(Less, WhenZeroCrossFromAbove);
+STATE_CROSS_EVENT_FROM_COMP(LessEqual, WhenZeroCrossFromAbove);
 
 template <IsStateDetectExpression Event, IsStateBoolExpression Condition>
 struct StateDetectWithLocationCondition : StateDetectExpression {
