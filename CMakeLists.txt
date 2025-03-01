@@ -12,6 +12,7 @@ set(SOURCES
   test/event_detection.cpp
   test/piecewise.cpp
   test/api/events.cpp
+  test/api/math.cpp
   test/api/hist.cpp
   test/educational/constness.cpp
   test/educational/describe.cpp
