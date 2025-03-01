@@ -38,7 +38,7 @@ template <IsStateExpression Arg> struct dstep : StateExpression {
   dstep(Arg arg_, double low = 0, double high = 1)
       : arg(arg_), low_value(low), high_value(high) {}
 
-  double curr_value = 0;
+  double curr_value;
 
   auto operator()(const auto &state) const { return curr_value; }
   auto operator()(const auto &state, double t) const {
