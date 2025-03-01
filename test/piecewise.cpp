@@ -23,7 +23,7 @@ struct SignRHS : Solver<SignRHS> {
 
   SignRHS(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
 
-  auto get_rhs() { return Vector(c + d * sign(x)); }
+  auto get_rhs() { return Vector(c + d * dsign(x)); }
   auto get_ic() { return Vector(Constant(x0)); } // x(0) = x0
 };
 
@@ -33,12 +33,12 @@ int main(int, char *[]) {
     auto eq = SignRHS(2., 1., -1.);
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
-        std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(x(t))))));
+        std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(x)))));
 
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = SignRHS(-2., -1., 1.);
+    auto eq = SignRHS(-2., 1., 1.);
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(x)))));

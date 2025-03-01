@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../util/math.hpp"
 #include "expression.hpp"
 #include <math.h>
 
@@ -41,6 +42,9 @@ STATE_FUNCTION_OVERLOAD(log10,
                         [](const auto &x) { return 1 / (x * std::log(10.)); });
 STATE_FUNCTION_OVERLOAD(log2,
                         [](const auto &x) { return 1 / (x * std::log(2.)); });
+
+STATE_FUNCTION_OVERLOAD(sign, [](auto...) { return 0; });
+STATE_FUNCTION_OVERLOAD(abs, sign);
 
 /*VARIABLE_OVERLOAD_FUNCTION_2(pow);*/
 /*VARIABLE_OVERLOAD_FUNCTION_2(atan2);*/
