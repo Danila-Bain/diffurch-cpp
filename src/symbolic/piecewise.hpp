@@ -97,46 +97,47 @@ constexpr auto D(const dabs<Arg> &abs_) {
     return D<derivative - 1>(dsign(abs_.arg) * D(abs_.arg));
 }
 
-/*template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,*/
-/*          IsStateExpression ExprIfFalse>*/
-/*struct Piecewise : StateExpression {*/
-/*  Condition condition;*/
-/*  ExprIfTrue expr_if_true;*/
-/*  ExprIfFalse expr_if_false;*/
-/**/
-/*Piecewise(Condition condition_, ExprIfTrue expr_if_true_,*/
-/*          ExprIfFalse expr_if_false_)*/
-/*    : condition(condition), expr_if_true(expr_if_true_),*/
-/*      expr_if_false(expr_if_false_) {};*/
-/**/
-/*bool condition_value;*/
-/**/
-/*auto operator()(const auto &state) const {*/
-/*  return condition_value ? expr_if_true(state) : expr_if_false(state);*/
-/*}*/
-/*auto operator()(const auto &state, double t) const {*/
-/*  return condition(state, t) ? expr_if_true(state, t)*/
-/*                             : expr_if_false(state, t);*/
-/*}*/
-/*auto operator()(double t) const {*/
-/*  return condition(t) ? expr_if_true(t) : expr_if_false(t);*/
-/*}*/
-/*auto prev(const auto &state) const {*/
-/*  return condition.prev(state) ? expr_if_true.prev(state)*/
-/*                               : expr_if_false.prev(state);*/
-/*}*/
-/**/
-/*auto get_events() const {*/
-/*  return Events(expr_if_true.get_events(), expr_if_false.get_events(),*/
-/*                StartEvent(nullptr,*/
-/*                           [this](const auto &state) {*/
-/*                             condition_value = condition(state);*/
-/*                           }),*/
-/*                Event(WhenChanges(condition), nullptr, [this](auto &state)
- * {*/
-/*                  condition_value = !condition_value;*/
-/*                }));*/
-/*}*/
-/*};*/
+template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,
+          IsStateExpression ExprIfFalse>
+struct piecewise : StateExpression {
+  Condition condition;
+  ExprIfTrue expr_if_true;
+  ExprIfFalse expr_if_false;
+
+  piecewise(Condition condition_, ExprIfTrue expr_if_true_,
+            ExprIfFalse expr_if_false_)
+      : condition(condition_), expr_if_true(expr_if_true_),
+        expr_if_false(expr_if_false_) {};
+
+  bool condition_value;
+
+  auto operator()(const auto &state) const {
+    return condition_value ? expr_if_true(state) : expr_if_false(state);
+  }
+  auto operator()(const auto &state, double t) const {
+    return condition(state, t) ? expr_if_true(state, t)
+                               : expr_if_false(state, t);
+  }
+  auto operator()(double t) const {
+    return condition(t) ? expr_if_true(t) : expr_if_false(t);
+  }
+  auto prev(const auto &state) const {
+    return condition.prev(state) ? expr_if_true.prev(state)
+                                 : expr_if_false.prev(state);
+  }
+
+  auto get_events() {
+    return std::tuple_cat(
+        expr_if_true.get_events(), expr_if_false.get_events(),
+        std::make_tuple(
+            StartEvent(nullptr,
+                       [this](const auto &state) {
+                         condition_value = condition(state);
+                       }),
+            Event(WhenSwitch(condition), nullptr, [this](auto &state) {
+              condition_value = condition(state);
+            })));
+  }
+};
 
 } // namespace diffurch

@@ -15,60 +15,14 @@ namespace plt = matplotlibcpp;
 using namespace diffurch;
 using namespace variables_x_t;
 
-struct SignRHS : Solver<SignRHS> {
-
-  double c;
-  double d;
-  double x0;
-
-  SignRHS(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
-
-  auto get_rhs() { return Vector(c + d * dsign(x)); }
-  auto get_ic() { return Vector(Constant(x0)); } // x(0) = x0
-};
-
-struct tSignRHS : Solver<tSignRHS> {
-  double c;
-  double d;
-  double x0;
-  tSignRHS(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
-
-  auto get_rhs() { return Vector(c + d * dsign(t)); }
-  auto get_ic() { return Vector(Constant(x0)); }
-};
-struct tStepRHS : Solver<tStepRHS> {
-  double c;
-  double d;
-  double x0;
-  tStepRHS(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
-
-  auto get_rhs() { return Vector(dstep(t, c, d)); }
-  auto get_ic() { return Vector(Constant(x0)); }
-};
-struct tAbsRHS : Solver<tAbsRHS> {
-  double c;
-  double d;
-  double x0;
-  tAbsRHS(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
-
-  auto get_rhs() { return Vector(c + d * dabs(t)); }
-  auto get_ic() { return Vector(Constant(x0)); }
-};
-
-struct tAbsRHSBad : Solver<tAbsRHSBad> {
-  double c;
-  double d;
-  double x0;
-  tAbsRHSBad(double c_, double d_, double x0_) : c(c_), d(d_), x0(x0_) {};
-
-  auto get_rhs() { return Vector(c + d * abs(t)); }
-  auto get_ic() { return Vector(Constant(x0)); }
-};
-
 int main(int, char *[]) {
 
   {
-    auto eq = SignRHS(2., 1., -1.); // x' = 2 + sign(x); x(-1) = -1;
+    struct SignRHS : Solver<SignRHS> {
+      auto get_rhs() { return Vector(2. + 1. * dsign(x)); }
+      auto get_ic() { return Vector(Constant(-1.)); }
+    } eq;
+
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(x)))));
@@ -77,7 +31,10 @@ int main(int, char *[]) {
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = SignRHS(-2., 1., 1.); // x' = -2 + sign(x); x(-1) = 1;
+    struct SignRHS : Solver<SignRHS> {
+      auto get_rhs() { return Vector(-2. + 1. * dsign(x)); }
+      auto get_ic() { return Vector(Constant(1.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(x)))));
@@ -86,7 +43,10 @@ int main(int, char *[]) {
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = tSignRHS(2., 1., -1.); // x' = 2 + sign(t); x(-1) = -1;
+    struct tSignRHS : Solver<tSignRHS> {
+      auto get_rhs() { return Vector(2. + dsign(t)); }
+      auto get_ic() { return Vector(Constant(-1.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(t)))));
@@ -95,7 +55,10 @@ int main(int, char *[]) {
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = tStepRHS(1., 2., -1.); // x' = t < 0 ? 1 : 2; x(-1) = -1;
+    struct tStepRHS : Solver<tStepRHS> {
+      auto get_rhs() { return Vector(dstep(t, 1., 2.)); }
+      auto get_ic() { return Vector(Constant(-1.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.3),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(t)))));
@@ -105,7 +68,10 @@ int main(int, char *[]) {
   }
 
   {
-    auto eq = tAbsRHS(0., 1., 0.); // x' = |t|; x(-1) = 0;
+    struct tAbsRHS : Solver<tAbsRHS> {
+      auto get_rhs() { return Vector(dabs(t)); }
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.25),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(t)))));
@@ -114,7 +80,10 @@ int main(int, char *[]) {
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = tAbsRHS(0., 1., 0.); // x' = |t|; x(-1) = 0;
+    struct tAbsRHS : Solver<tAbsRHS> {
+      auto get_rhs() { return Vector(dabs(t)); }
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.4),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(t)))));
@@ -123,7 +92,10 @@ int main(int, char *[]) {
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = tAbsRHSBad(0., 1., 0.); // x' = |t|; x(-1) = 0;
+    struct tAbsRHSBad : Solver<tAbsRHSBad> {
+      auto get_rhs() { return Vector(abs(t)); } // here abs instead of dabs
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
     auto sol = eq.solution(
         -1, 1, ConstantStepsize(0.4),
         std::tuple_cat(std::make_tuple(StepEvent(t | x | sign(t)))));
@@ -131,6 +103,17 @@ int main(int, char *[]) {
     std::cout << "tAbs (Without detection) (there sould be x(1) = 1 but there "
                  "is not):"
               << std::endl;
+    std::cout << sol << std::endl; //
+  }
+  {
+    struct tPiecewise : Solver<tPiecewise> {
+      auto get_rhs() { return Vector(piecewise(t < 0, 3 * t * t, 2 * t)); }
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
+    auto sol = eq.solution(-1, 1, ConstantStepsize(0.3),
+                           std::tuple_cat(std::make_tuple(StepEvent(t | x))));
+
+    std::cout << "tPiecewise:" << std::endl;
     std::cout << sol << std::endl; //
   }
   return 0;
