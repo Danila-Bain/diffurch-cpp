@@ -6,11 +6,9 @@ The list below represents a combination of high-priority work, nice-to-have feat
 - discontinuous functions, including `sign`, `Heaviside` (or, better named, `step`), `floor`, and, most importantly, `piecewise`.
 - delta functions in the right handside, such that `x * delta(t-1)` results in a jump of a magnitude `x` at `t==1` in the corresponding variable.
 
+# Events Detection
 
-# IO
-
-- different output policies, including 1) (current) tuple of vectors, 2) .dat files (space separated columns), 3) .csv file
-
+- Testing is required
 
 # Event Types
 
@@ -28,6 +26,10 @@ The list below represents a combination of high-priority work, nice-to-have feat
 - Add performance tests, which are supposed to be run to compare versions.
 - Modify the state class, such that data sequence is stored in a queue instead of vector.
 
+# Stepsize Control
+
+- PI vs I stepsize controllers (now only "I" is available in the form of AdaptiveStepsize)
+- AdaptiveStepsize needs testing
 
 # Known Issues
 
