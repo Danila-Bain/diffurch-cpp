@@ -30,60 +30,72 @@ template <IsStateExpression Arg> struct dsign : StateExpression {
   }
 };
 
-// template <IsStateExpression Arg> struct Function_step : StateExpression {
-//   Arg arg;
-//   double low_value;
-//   double high_value;
-//   double threshold;
-//
-//   Function_step(Arg arg_, double low = 0, double high = 1, double thresh = 0)
-//       : arg(arg_), low_value(low), high_value(high), threshold(thresh) {}
-//
-//   double curr_value = 0;
-//
-//   auto operator()(const auto &state) const { return curr_value; }
-//   auto operator()(const auto &state, double t) const {
-//     return arg(state, t) < threshold ? low_value : high_value;
-//   }
-//   auto operator()(double t) const {
-//     return arg(t) < threshold ? low_value : high_value;
-//   }
-//   auto prev(const auto &state) const { return curr_value; }
-//
-//   auto get_events() {
-//     return std::tuple_cat(
-//         arg.get_events(),
-//         std::make_tuple(
-//             StartEvent(nullptr,
-//                        [this](const auto &state) {
-//                          curr_value =
-//                              arg(state) < threshold ? low_value : high_value;
-//                        }),
-//             Event(When(arg == threshold), nullptr, [this](auto &state) {
-//               arg(state) < threshold ? low_value : high_value;
-//             })));
-//   }
-// };
-// template <IsStateExpression Arg> auto step(Arg arg, auto... args) {
-//   return Function_step(arg, args...);
-// }
+template <IsStateExpression Arg> struct dstep : StateExpression {
+  Arg arg;
+  const double low_value;
+  const double high_value;
 
-/**/
-/*template <IsStateExpression Arg> struct Function_abs : StateExpression {*/
-/*  Arg arg;*/
-/*  Function_abs(Arg arg_) : arg(arg_) {}*/
-/*  auto operator()(const auto &state) const { return abs(arg(state)); }*/
-/*  auto operator()(const auto &state, double t) const {*/
-/*    return abs(arg(state, t));*/
-/*  }*/
-/*  auto operator()(double t) const { return abs(arg(t)); }*/
-/*  auto prev(const auto &state) const { return abs(arg.prev(state)); }*/
-/**/
-/*  auto get_events() const { return Events(arg.get_events(), Event(arg == 0));
- * }*/
-/*};*/
-/*template <IsStateExpression Arg> auto abs(Arg arg) { return Function_abs(arg);
- * }*/
+  dstep(Arg arg_, double low = 0, double high = 1)
+      : arg(arg_), low_value(low), high_value(high) {}
+
+  double curr_value = 0;
+
+  auto operator()(const auto &state) const { return curr_value; }
+  auto operator()(const auto &state, double t) const {
+    return step(arg(state, t), low_value, high_value);
+  }
+  auto operator()(double t) const {
+    return step(arg(t), low_value, high_value);
+  }
+  auto prev(const auto &state) const { return curr_value; }
+
+  auto get_events() {
+    return std::tuple_cat(
+        arg.get_events(),
+        std::make_tuple(StartEvent(nullptr,
+                                   [this](const auto &state) {
+                                     curr_value = step(arg(state), low_value,
+                                                       high_value);
+                                   }),
+                        Event(When(arg == 0), nullptr, [this](auto &state) {
+                          curr_value = step(arg(state), low_value, high_value);
+                        })));
+  }
+};
+
+template <IsStateExpression Arg> struct dabs : StateExpression {
+  Arg arg;
+
+  dabs(Arg arg_) : arg(arg_) {}
+
+  double curr_sign = 1;
+
+  auto operator()(const auto &state) const { return curr_sign * arg(state); }
+  auto operator()(const auto &state, double t) const {
+    return abs(arg(state, t));
+  }
+  auto operator()(double t) const { return abs(arg(t)); }
+  auto prev(const auto &state) const { return curr_sign * arg.prev(state); }
+
+  auto get_events() {
+    return std::tuple_cat(
+        arg.get_events(),
+        std::make_tuple(StartEvent(nullptr,
+                                   [this](const auto &state) {
+                                     curr_sign = sign(arg(state));
+                                   }),
+                        Event(When(arg == 0), nullptr, [this](auto &state) {
+                          curr_sign = -curr_sign;
+                        })));
+  }
+};
+template <std::size_t derivative = 1, IsStateExpression Arg>
+constexpr auto D(const dabs<Arg> &abs_) {
+  if constexpr (derivative == 0)
+    return abs_;
+  else
+    return D<derivative - 1>(dsign(abs_.arg) * D(abs_.arg));
+}
 
 /*template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,*/
 /*          IsStateExpression ExprIfFalse>*/
