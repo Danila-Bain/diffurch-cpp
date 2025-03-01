@@ -20,7 +20,9 @@ template <IsNotStateExpression T = double> struct Constant : StateExpression {
     return value;
   }
   T operator()([[maybe_unused]] double t) const { return value; }
-  static auto get_events() { return std::make_tuple(); }
+  template <size_t coordinate = -1> static auto get_events() {
+    return std::make_tuple();
+  }
 };
 
 template <size_t derivative = 1, IsNotStateExpression T = double>
@@ -39,7 +41,9 @@ struct TimeVariable : StateExpression {
     return t;
   }
   static auto operator()(double t) { return t; }
-  static auto get_events() { return std::make_tuple(); }
+  template <size_t coordinate = size_t(-1)> static auto get_events() {
+    return std::make_tuple();
+  }
 };
 
 template <size_t derivative = 1> constexpr auto D(const TimeVariable &t) {
@@ -65,7 +69,9 @@ struct VariableAt : StateExpression {
   auto operator()(const auto &state, double t) const {
     return state.template eval<derivative>(arg(state, t))[coordinate];
   }
-  auto get_events() { return arg.get_events(); }
+  template <size_t current_coordinate = size_t(-1)> auto get_events() {
+    return arg.template get_events<current_coordinate>();
+  }
 };
 
 template <size_t derivative = 1, size_t var_coordinate = -1,
@@ -91,7 +97,9 @@ struct Variable : StateExpression {
     return VariableAt<coordinate, Arg, derivative>(arg);
   }
 
-  static auto get_events() { return std::make_tuple(); }
+  template <size_t current_coordinate = size_t(-1)> static auto get_events() {
+    return std::make_tuple();
+  }
 };
 
 template <size_t coordinate> struct Variable<coordinate, 0> : StateExpression {
@@ -115,7 +123,9 @@ template <size_t coordinate> struct Variable<coordinate, 0> : StateExpression {
     return VariableAt<coordinate, Arg, 0>(arg);
   }
 
-  static auto get_events() { return std::make_tuple(); }
+  template <size_t current_coordinate = size_t(-1)> static auto get_events() {
+    return std::make_tuple();
+  }
 };
 
 template <size_t derivative = 1, size_t var_coordinate = -1,

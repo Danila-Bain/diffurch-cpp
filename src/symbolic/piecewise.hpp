@@ -2,6 +2,7 @@
 
 #include "../util/math.hpp"
 #include "expression.hpp"
+#include <cstddef>
 #include <tuple>
 
 namespace diffurch {
@@ -17,9 +18,9 @@ template <IsStateExpression Arg> struct dsign : StateExpression {
   auto operator()(double t) const { return sign(arg(t)); }
   auto prev(const auto &state) const { return curr_value; }
 
-  auto get_events() {
+  template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(
-        arg.get_events(),
+        arg.template get_events<current_coordinate>(),
         std::make_tuple(StartEvent(nullptr,
                                    [this](const auto &state) {
                                      curr_value = sign(arg(state));
@@ -49,9 +50,9 @@ template <IsStateExpression Arg> struct dstep : StateExpression {
   }
   auto prev(const auto &state) const { return curr_value; }
 
-  auto get_events() {
+  template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(
-        arg.get_events(),
+        arg.template get_events<current_coordinate>(),
         std::make_tuple(StartEvent(nullptr,
                                    [this](const auto &state) {
                                      curr_value = step(arg(state), low_value,
@@ -77,9 +78,9 @@ template <IsStateExpression Arg> struct dabs : StateExpression {
   auto operator()(double t) const { return abs(arg(t)); }
   auto prev(const auto &state) const { return curr_sign * arg.prev(state); }
 
-  auto get_events() {
+  template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(
-        arg.get_events(),
+        arg.template get_events<current_coordinate>(),
         std::make_tuple(StartEvent(nullptr,
                                    [this](const auto &state) {
                                      curr_sign = sign(arg(state));
@@ -126,9 +127,10 @@ struct piecewise : StateExpression {
                                  : expr_if_false.prev(state);
   }
 
-  auto get_events() {
+  template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(
-        expr_if_true.get_events(), expr_if_false.get_events(),
+        expr_if_true.template get_events<current_coordinate>(),
+        expr_if_false.template get_events<current_coordinate>(),
         std::make_tuple(
             StartEvent(nullptr,
                        [this](const auto &state) {

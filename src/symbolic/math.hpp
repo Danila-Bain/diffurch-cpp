@@ -16,7 +16,9 @@ namespace diffurch {
     }                                                                          \
     auto operator()(double t) const { return func(arg(t)); }                   \
     auto prev(const auto &state) const { return func(arg.prev(state)); }       \
-    auto get_events() { return arg.get_events(); }                             \
+    template <size_t current_coordinate = size_t(-1)> auto get_events() {      \
+      return arg.template get_events<current_coordinate>();                    \
+    }                                                                          \
   };                                                                           \
   template <IsStateExpression Arg> auto func(Arg arg) {                        \
     return Function_##func(arg);                                               \

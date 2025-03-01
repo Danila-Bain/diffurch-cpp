@@ -41,7 +41,8 @@ template <IsStateExpression... Coordinates> struct Vector : StateExpression {
   }
   auto get_events() {
     return [&]<size_t... Is>(std::index_sequence<Is...>) {
-      return std::tuple_cat(std::get<Is>(coordinates).get_events()...);
+      return std::tuple_cat(
+          std::get<Is>(coordinates).template get_events<Is>()...);
     }(std::make_index_sequence<sizeof...(Coordinates)>{});
   }
 };

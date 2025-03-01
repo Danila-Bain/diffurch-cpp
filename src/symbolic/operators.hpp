@@ -23,8 +23,9 @@ namespace diffurch {
       return l(state, t) op r(state, t);                                       \
     }                                                                          \
     auto operator()(double t) const { return l(t) op r(t); }                   \
-    auto get_events() {                                                        \
-      return std::tuple_cat(l.get_events(), r.get_events());                   \
+    template <size_t current_coordinate = size_t(-1)> auto get_events() {      \
+      return std::tuple_cat(l.template get_events<current_coordinate>(),       \
+                            r.template get_events<current_coordinate>());      \
     }                                                                          \
   };                                                                           \
   template <Is##argument_class L, Is##argument_class R>                        \
@@ -50,7 +51,9 @@ namespace diffurch {
     }                                                                          \
     auto operator()(double t) const { return op(arg(t)); }                     \
     auto prev(const auto &state) const { return op(arg.prev(state)); }         \
-    auto get_events() { return arg.get_events(); }                             \
+    template <size_t current_coordinate = size_t(-1)> auto get_events() {      \
+      return arg.template get_events<current_coordinate>();                    \
+    }                                                                          \
   };                                                                           \
   template <Is##argument_class Arg> auto operator op(Arg arg) {                \
     return op_name(arg);                                                       \
