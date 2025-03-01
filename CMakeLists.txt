@@ -10,6 +10,7 @@ set(SOURCES
   examples/linear_ndde.cpp
   test/global_error.cpp
   test/event_detection.cpp
+  test/piecewise.cpp
   test/api/events.cpp
   test/api/hist.cpp
   test/educational/constness.cpp
