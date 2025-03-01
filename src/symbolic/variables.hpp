@@ -65,7 +65,7 @@ struct VariableAt : StateExpression {
   auto operator()(const auto &state, double t) const {
     return state.template eval<derivative>(arg(state, t))[coordinate];
   }
-  auto get_events() const { return arg.get_events(); }
+  auto get_events() { return arg.get_events(); }
 };
 
 template <size_t derivative = 1, size_t var_coordinate = -1,

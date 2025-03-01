@@ -39,9 +39,9 @@ template <IsStateExpression... Coordinates> struct Vector : StateExpression {
           std::get<Is>(coordinates).prev(state)...};
     }(std::make_index_sequence<sizeof...(Coordinates)>{});
   }
-  auto get_events() const {
+  auto get_events() {
     return [&]<size_t... Is>(std::index_sequence<Is...>) {
-      return std::make_tuple(std::get<Is>(coordinates).get_events()...);
+      return std::tuple_cat(std::get<Is>(coordinates).get_events()...);
     }(std::make_index_sequence<sizeof...(Coordinates)>{});
   }
 };

@@ -23,7 +23,7 @@ namespace diffurch {
       return l(state, t) op r(state, t);                                       \
     }                                                                          \
     auto operator()(double t) const { return l(t) op r(t); }                   \
-    auto get_events() const {                                                  \
+    auto get_events() {                                                        \
       return std::tuple_cat(l.get_events(), r.get_events());                   \
     }                                                                          \
   };                                                                           \
@@ -50,7 +50,7 @@ namespace diffurch {
     }                                                                          \
     auto operator()(double t) const { return op(arg(t)); }                     \
     auto prev(const auto &state) const { return op(arg.prev(state)); }         \
-    auto get_events() const { return arg.get_events(); }                       \
+    auto get_events() { return arg.get_events(); }                             \
   };                                                                           \
   template <Is##argument_class Arg> auto operator op(Arg arg) {                \
     return op_name(arg);                                                       \

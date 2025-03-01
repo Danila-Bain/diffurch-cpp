@@ -15,7 +15,7 @@ namespace diffurch {
     }                                                                          \
     auto operator()(double t) const { return func(arg(t)); }                   \
     auto prev(const auto &state) const { return func(arg.prev(state)); }       \
-    auto get_events() const { return arg.get_events(); }                       \
+    auto get_events() { return arg.get_events(); }                             \
   };                                                                           \
   template <IsStateExpression Arg> auto func(Arg arg) {                        \
     return Function_##func(arg);                                               \
