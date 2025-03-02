@@ -1,9 +1,10 @@
+#include <iostream>
+
 #include "../diffurch.hpp"
 #include "../src/equations.hpp"
 #include "../src/rk_tables/rktp64.hpp"
 #include "../src/test/global_error.hpp"
 #include "../src/util/print.hpp"
-/*#include <iostream>*/
 /*#include <cmath>*/
 /*#include <matplot/matplot.h>*/
 
@@ -107,7 +108,7 @@ int main(int, char *[]) {
   }
   {
     struct tPiecewise : Solver<tPiecewise> {
-      auto get_rhs() { return Vector(piecewise(t < 0, 3 * t * t, 2 * t)); }
+      auto get_rhs() { return Vector(dpiecewise(t < 0, 3 * t * t, 2 * t)); }
       auto get_ic() { return Vector(Constant(0.)); }
     } eq;
     auto sol = eq.solution(-1, 1, ConstantStepsize(0.3),
@@ -122,7 +123,7 @@ int main(int, char *[]) {
       auto get_ic() { return Constant(0.) | Constant(0.); }
     } eq;
     auto sol =
-        eq.solution(-1, 2, ConstantStepsize(0.3),
+        eq.solution(-1, 2, ConstantStepsize(1.1),
                     std::tuple_cat(std::make_tuple(StepEvent(t | x | y))));
 
     std::cout << "DeltaEq:" << std::endl;

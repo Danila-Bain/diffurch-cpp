@@ -12,11 +12,6 @@ template <IsStateExpression Arg> struct dsign : StateExpression {
   dsign(Arg arg_) : arg(arg_) {}
   double curr_value = 0;
   auto operator()(const auto &state) const { return curr_value; }
-  auto operator()(const auto &state, double t) const {
-    return sign(arg(state, t));
-  }
-  auto operator()(double t) const { return sign(arg(t)); }
-  auto prev(const auto &state) const { return curr_value; }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(arg.template get_events<current_coordinate>(),
@@ -43,12 +38,6 @@ template <IsStateExpression Arg> struct dstep : StateExpression {
   double curr_value;
 
   auto operator()(const auto &state) const { return curr_value; }
-  auto operator()(const auto &state, double t) const {
-    return step(arg(state, t), low_value, high_value);
-  }
-  auto operator()(double t) const {
-    return step(arg(t), low_value, high_value);
-  }
   auto prev(const auto &state) const { return curr_value; }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
@@ -73,11 +62,6 @@ template <IsStateExpression Arg> struct dabs : StateExpression {
   double curr_sign = 1;
 
   auto operator()(const auto &state) const { return curr_sign * arg(state); }
-  auto operator()(const auto &state, double t) const {
-    return abs(arg(state, t));
-  }
-  auto operator()(double t) const { return abs(arg(t)); }
-  auto prev(const auto &state) const { return curr_sign * arg.prev(state); }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(arg.template get_events<current_coordinate>(),
@@ -102,13 +86,13 @@ constexpr auto D(const dabs<Arg> &abs_) {
 
 template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,
           IsStateExpression ExprIfFalse>
-struct piecewise : StateExpression {
+struct dpiecewise : StateExpression {
   Condition condition;
   ExprIfTrue expr_if_true;
   ExprIfFalse expr_if_false;
 
-  piecewise(Condition condition_, ExprIfTrue expr_if_true_,
-            ExprIfFalse expr_if_false_)
+  dpiecewise(Condition condition_, ExprIfTrue expr_if_true_,
+             ExprIfFalse expr_if_false_)
       : condition(condition_), expr_if_true(expr_if_true_),
         expr_if_false(expr_if_false_) {};
 
@@ -116,17 +100,6 @@ struct piecewise : StateExpression {
 
   auto operator()(const auto &state) const {
     return condition_value ? expr_if_true(state) : expr_if_false(state);
-  }
-  auto operator()(const auto &state, double t) const {
-    return condition(state, t) ? expr_if_true(state, t)
-                               : expr_if_false(state, t);
-  }
-  auto operator()(double t) const {
-    return condition(t) ? expr_if_true(t) : expr_if_false(t);
-  }
-  auto prev(const auto &state) const {
-    return condition.prev(state) ? expr_if_true.prev(state)
-                                 : expr_if_false.prev(state);
   }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
