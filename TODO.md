@@ -2,16 +2,17 @@ The list below represents a combination of high-priority work, nice-to-have feat
 
 # Symbolic
 
-- non-smooth functions `clip`, `relu`, etc.
 - discontinuous functions `floor`, `ceil`, `mod`, etc.
 - delta functions in the right handside, such that `x * delta(t-1)` results in a jump of a magnitude `x` at `t==1` in the corresponding variable. The delta function introduces several difficulties:
   - Delta function is more restricted than regular functions, because delta can only appear linearly in rhs coordinate, as in `a + b * delta(c)`, where `a`,`b`, and `c` are any regular expressions. This can be treated by introducing StateDeltaExpression, and restricting the rules, by which it can be combined with itself or other StateExpression's. 
   - Delta function explicitly changes the state, but the affected coordinate is not known from within. I.e. in `Vector(delta(t), 0.)`, the `delta(t)` doesn't know that it is part of the vector at the first coordinate. We can tell it, by specifying the coordinate explicitly like `Vector(delta<0>(t), 0.)`, which is not ideal, because user could unknowingly write an erroneous expression `Vector(delta<1>(t), 0.)`, which would not behave in expected way. Since the coordinate information is needed only for constructing events, the `get_events` function could accept an optional template argument, that specifies the coordinate of the expression in the vector. Such template argument then can be passed down to any subexpressions. 
 
+- For rhs and ic, if it is not a vector, convert it to a vector automatically, or use plain double everywhere instead.
+
 # Events Detection
 
 - Test simultanious and close-by events handling
-- Delay propagated events: 
+- Delay propagated events.
 
 # Event Types
 
@@ -40,4 +41,4 @@ The list below represents a combination of high-priority work, nice-to-have feat
 
 # Known Issues
 
-- For delayed equations, if stepsize is smaller than the delay, it is not handled and results in program termination.
+- For delayed equations, stepsizes smaller than the delay are not handled.

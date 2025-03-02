@@ -10,7 +10,7 @@ set(SOURCES
   examples/linear_ndde.cpp
   test/global_error.cpp
   test/event_detection.cpp
-  test/piecewise.cpp
+  test/discontinuous.cpp
   test/api/events.cpp
   test/api/math.cpp
   test/api/hist.cpp

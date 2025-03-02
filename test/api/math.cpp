@@ -36,6 +36,21 @@ int main() {
     ASSERT(step(0., -2., 4.) == 4.);
   }
 
+  {
+    ASSERT(clip(-5., -2., 4.) == -2.);
+    ASSERT(clip(-4., -2., 4.) == -2.);
+    ASSERT(clip(-3., -2., 4.) == -2.);
+    ASSERT(clip(-2., -2., 4.) == -2.);
+    ASSERT(clip(-1., -2., 4.) == -1.);
+    ASSERT(clip(0., -2., 4.) == 0.);
+    ASSERT(clip(1., -2., 4.) == 1.);
+    ASSERT(clip(2., -2., 4.) == 2.);
+    ASSERT(clip(3., -2., 4.) == 3.);
+    ASSERT(clip(4., -2., 4.) == 4.);
+    ASSERT(clip(5., -2., 4.) == 4.);
+    ASSERT(clip(6., -2., 4.) == 4.);
+  }
+
   if (error_count == 0) {
     cout << "All tests finished succesfully" << endl;
   } else {

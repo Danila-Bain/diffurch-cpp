@@ -129,5 +129,28 @@ int main(int, char *[]) {
     std::cout << "DeltaEq:" << std::endl;
     std::cout << sol << std::endl; //
   }
+
+  {
+    struct ReluEq : Solver<ReluEq> {
+      auto get_rhs() { return Vector(2 * drelu(t)); }
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
+    auto sol = eq.solution(-1, 1, ConstantStepsize(0.3),
+                           std::tuple_cat(std::make_tuple(StepEvent(t | x))));
+
+    std::cout << "ReluEq:" << std::endl;
+    std::cout << sol << std::endl; //
+  }
+  {
+    struct ClipEq : Solver<ClipEq> {
+      auto get_rhs() { return Vector(dclip(t, -1, 1.)); }
+      auto get_ic() { return Vector(Constant(0.)); }
+    } eq;
+    auto sol = eq.solution(-2, 2, ConstantStepsize(0.75),
+                           std::tuple_cat(std::make_tuple(StepEvent(t | x))));
+
+    std::cout << "ClipEq:" << std::endl;
+    std::cout << sol << std::endl; //
+  }
   return 0;
 }
