@@ -19,15 +19,16 @@ template <IsStateExpression Arg> struct dsign : StateExpression {
   auto prev(const auto &state) const { return curr_value; }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
-    return std::tuple_cat(
-        arg.template get_events<current_coordinate>(),
-        std::make_tuple(StartEvent(nullptr,
-                                   [this](const auto &state) {
-                                     curr_value = sign(arg(state));
-                                   }),
-                        Event(When(arg == 0), nullptr, [this](auto &state) {
-                          curr_value = -curr_value;
-                        })));
+    return std::tuple_cat(arg.template get_events<current_coordinate>(),
+                          std::make_tuple(StartEvent(nullptr,
+                                                     [this](const auto &state) {
+                                                       curr_value =
+                                                           sign(arg(state));
+                                                     }),
+                                          Event(When(arg == 0), nullptr,
+                                                [this](const auto &state) {
+                                                  curr_value = -curr_value;
+                                                })));
   }
 };
 
@@ -53,14 +54,14 @@ template <IsStateExpression Arg> struct dstep : StateExpression {
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
     return std::tuple_cat(
         arg.template get_events<current_coordinate>(),
-        std::make_tuple(StartEvent(nullptr,
-                                   [this](const auto &state) {
-                                     curr_value = step(arg(state), low_value,
-                                                       high_value);
-                                   }),
-                        Event(When(arg == 0), nullptr, [this](auto &state) {
-                          curr_value = step(arg(state), low_value, high_value);
-                        })));
+        std::make_tuple(
+            StartEvent(nullptr,
+                       [this](const auto &state) {
+                         curr_value = step(arg(state), low_value, high_value);
+                       }),
+            Event(When(arg == 0), nullptr, [this](const auto &state) {
+              curr_value = step(arg(state), low_value, high_value);
+            })));
   }
 };
 
@@ -79,15 +80,16 @@ template <IsStateExpression Arg> struct dabs : StateExpression {
   auto prev(const auto &state) const { return curr_sign * arg.prev(state); }
 
   template <size_t current_coordinate = size_t(-1)> auto get_events() {
-    return std::tuple_cat(
-        arg.template get_events<current_coordinate>(),
-        std::make_tuple(StartEvent(nullptr,
-                                   [this](const auto &state) {
-                                     curr_sign = sign(arg(state));
-                                   }),
-                        Event(When(arg == 0), nullptr, [this](auto &state) {
-                          curr_sign = -curr_sign;
-                        })));
+    return std::tuple_cat(arg.template get_events<current_coordinate>(),
+                          std::make_tuple(StartEvent(nullptr,
+                                                     [this](const auto &state) {
+                                                       curr_sign =
+                                                           sign(arg(state));
+                                                     }),
+                                          Event(When(arg == 0), nullptr,
+                                                [this](const auto &state) {
+                                                  curr_sign = -curr_sign;
+                                                })));
   }
 };
 template <std::size_t derivative = 1, IsStateExpression Arg>
@@ -136,7 +138,7 @@ struct piecewise : StateExpression {
                        [this](const auto &state) {
                          condition_value = condition(state);
                        }),
-            Event(WhenSwitch(condition), nullptr, [this](auto &state) {
+            Event(WhenSwitch(condition), nullptr, [this](const auto &state) {
               condition_value = condition(state);
             })));
   }

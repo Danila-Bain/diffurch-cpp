@@ -40,3 +40,4 @@ The list below represents a combination of high-priority work, nice-to-have feat
 # Known Issues
 
 - For delayed equations, if stepsize is smaller than the delay, it is not handled and results in program termination.
+- When there is an event, which alters the state, and it makes zero step. This zero step does not trigger other step events.
