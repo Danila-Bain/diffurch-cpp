@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "../../src/events.hpp"
 #include "../../src/symbolic.hpp"
 #include "../../src/util/print.hpp"
@@ -144,6 +146,7 @@ int main() {
       auto e1 = Event(nullptr, nullptr, x << x + 1 && y << y + 1);
       e1(s);
       ASSERT(s.x_curr[0] == 0.01 + 1. && s.x_curr[1] == 0.02 + 1.);
+      ASSERT(s.x_prev == state.x_curr);
 
       auto e2 = Event(nullptr, nullptr, x << x + 1 | y << 2);
       e2(s);

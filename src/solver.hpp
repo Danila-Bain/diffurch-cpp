@@ -98,16 +98,25 @@ template <typename Equation> struct Solver {
         double save_t_step = state.t_step;
 
         state.t_step = t_event - state.t_prev;
-        runge_kutta_step();
+        runge_kutta_step(); // redo rk step
+        state.push_back_curr();
+        events.step_events(state);
+
         events.located_event(state);
 
-        // restore time step (important for constnat time step)
+        // if zero step were made in located event
+        if (state.t_curr == state.t_prev) {
+          events.step_events(state);
+        }
+
+        // restore time step
+        // (it's important to not change the constant time step)
+        // (it's important to not sproradicaly reduce adaptive time step)
         state.t_step = save_t_step;
+      } else {
+        state.push_back_curr();
+        events.step_events(state);
       }
-
-      state.push_back_curr();
-
-      events.step_events(state);
     }
 
     events.stop_events(state);

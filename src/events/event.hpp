@@ -23,14 +23,12 @@ public:
 
   // Event action, constiting of calling save and set handlers.
   void operator()(auto &state) {
-
-    constexpr bool is_saving = requires { this->save(state); };
-
-    constexpr bool is_setting_no_args = requires { this->set(); };
+    static constexpr bool is_saving = requires { this->save(state); };
+    static constexpr bool is_setting_no_args = requires { this->set(); };
     // rvalue binds only if set accepts state by copy or const reference
-    constexpr bool is_setting_const_state =
+    static constexpr bool is_setting_const_state =
         requires { this->set(std::move(state)); };
-    constexpr bool is_setting_non_const_state =
+    static constexpr bool is_setting_non_const_state =
         (requires { this->set(state); }) && !is_setting_const_state;
 
     if constexpr (is_saving) {
