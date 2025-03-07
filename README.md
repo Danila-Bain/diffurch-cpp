@@ -8,7 +8,7 @@ Equation type support:
 [x] neutral delay differential equations (such as `x' = x'(t - 1)`)
 [x] discontinuous differential equations (such as `x' = -y; y' = sign(x)` or `x'(t) = -sign(x(t-1))`)
 [ ] differential equations with delta functions (such as `x' = -x + delta(sin(t))`)
-[ ] hybrid differential equations (such as [https://www.researchgate.net/publication/342725034_Exact_analytic_solution_for_a_chaotic_hybrid_dynamical_system_and_its_electronic_realization](`x' = -x + q`), where `q` is a descrete variable that becomes `2` after `x` passes through `-1` from above and becomes `-2` after `x` passes through `1` from below) 
+[ ] hybrid differential equations (such as [`x' = -x + q`](https://www.researchgate.net/publication/342725034_Exact_analytic_solution_for_a_chaotic_hybrid_dynamical_system_and_its_electronic_realization), where `q` is a descrete variable that becomes `2` after `x` passes through `-1` from above and becomes `-2` after `x` passes through `1` from below) 
 [x] any mix of the above
 
 # Usage
