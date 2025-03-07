@@ -57,21 +57,37 @@ template <IsStateExpression Arg> struct WhenZeroCross : StateDetectExpression {
 };
 
 template <IsStateExpression Arg>
-struct ZeroCrossFromBelowEvent : WhenZeroCross<Arg> {
-  using WhenZeroCross<Arg>::arg;
-  using WhenZeroCross<Arg>::EqualEvent;
-  using WhenZeroCross<Arg>::locate;
+struct WhenZeroCrossFromBelow : StateDetectExpression {
+  Arg arg;
+  WhenZeroCrossFromBelow(Arg arg_) : arg(arg_) {};
   bool detect(const auto &state) const {
     return arg(state) >= 0 && arg.prev(state) < 0;
   }
+  double locate(const auto &state) const {
+    if (detect(state)) {
+      return root_by_bisection(
+          [this, &state](double t) { return arg(state, t); }, state.t_prev,
+          state.t_curr);
+    } else {
+      return std::numeric_limits<double>::max();
+    }
+  }
 };
 template <IsStateExpression Arg>
-struct WhenZeroCrossFromAboveEvent : WhenZeroCross<Arg> {
-  using WhenZeroCross<Arg>::arg;
-  using WhenZeroCross<Arg>::EqualEvent;
-  using WhenZeroCross<Arg>::locate;
+struct WhenZeroCrossFromAbove : StateDetectExpression {
+  Arg arg;
+  WhenZeroCrossFromAbove(Arg arg_) : arg(arg_) {};
   bool detect(const auto &state) const {
     return arg(state) <= 0 && arg.prev(state) > 0;
+  }
+  double locate(const auto &state) const {
+    if (detect(state)) {
+      return root_by_bisection(
+          [this, &state](double t) { return arg(state, t); }, state.t_prev,
+          state.t_curr);
+    } else {
+      return std::numeric_limits<double>::max();
+    }
   }
 };
 
