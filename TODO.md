@@ -112,6 +112,7 @@ What I propose is to test different things separately, because truly exaustive t
 
 
 # Other Ideas 
+- Instead of delta_x_hat, provided by the embedded scheme, we can compute the error estimation directly, if we use coefficient vector (b - bb) in place of bb.
 - For now, the "solution" function is provided for equations by means of curiously recurring template pattern. I think it would be usefull to provide several interfaces, such as simply define a template function, that accepts equation class object as a parameter (which also would have to define "get_ic" and "get_rhs" methods).
 - By means of symbolic differentiation, it is possible to automatically derive the variational equation, even for discontinuous equations.
 - Possiblity to extending this library to work with partial differential equations is yet to be explored. Although the discretization (reducing to ODE) can be done manually, perhaps for many types of problems the discretization can be done automatically.
@@ -123,3 +124,6 @@ What I propose is to test different things separately, because truly exaustive t
 
 - For delayed equations, stepsizes smaller than the delay are not handled.
 - The order of output vectors corresponding to events is not the same as the order in which those events are defined
+- Double-detection example. We detect zero between -1 and 1, going from negative to positive. We locate this zero, and take the latest approximation 1.e-16, at which the value is 2.e-16. Then, we step to this point, but after that the value at 1.e-16 becomes -1.5e-16, i.e. it is acually the pre-event point. Then, because it's sign is negative, the zero detection will trigger again. How to solve it? Basically, one of the triggers must go away:
+  - suppress this event detection for one step
+  - do not trigger the previous event callback, since after the first step onto 1.e-16 the event detection no longer active, then, we proceed, event is triggered again, and hopefully, we not missing the second time, starting so close to it.
