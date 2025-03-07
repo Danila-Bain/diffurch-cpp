@@ -9,36 +9,36 @@
 
 namespace diffurch {
 
-template <typename RK, typename InitialConditionHandler> struct State {
+template <typename RK, typename InitialConditionHandlerType> struct State {
 
   static constexpr size_t n =
-      std::tuple_size<decltype(std::declval<InitialConditionHandler>()(
+      std::tuple_size<decltype(std::declval<InitialConditionHandlerType>()(
           0.))>::value;
 
-  InitialConditionHandler ic;
+  InitialConditionHandlerType ic;
 
   // independent variable
   double t_curr;
   double t_prev;
   double t_step;
   // should be a queue, it used only for interpolation
-  std::vector<double> t_sequence;
+  std::vector<decltype(t_curr)> t_sequence;
 
   // dependent variable
   Vec<n> x_curr;
   Vec<n> x_prev;
   // should be a queue, used only for interpolation
-  std::vector<Vec<n>> x_sequence;
+  std::vector<decltype(x_curr)> x_sequence;
 
   // K values for interpolation, runge kutta method must support intrpolation
   // in the future, queue should be used instead of vector, and the requred time
   // span of that queue (i.e. the delay time, or )
-  std::array<Vec<n>, RK::s> K_curr;
-  std::vector<std::array<Vec<n>, RK::s>> K_sequence;
+  std::array<decltype(x_curr), RK::s> K_curr;
+  std::vector<decltype(K_curr)> K_sequence;
 
   Vec<n> error_curr;
 
-  State(double initial_time, InitialConditionHandler ic_)
+  State(double initial_time, InitialConditionHandlerType ic_)
       : ic(ic_), t_curr(initial_time), t_prev(t_curr), t_sequence({t_curr}),
         x_curr(ic(initial_time)), x_prev(x_curr), x_sequence({x_curr}) {};
 
@@ -54,10 +54,11 @@ template <typename RK, typename InitialConditionHandler> struct State {
     // t_step is not updated, because it is the length of next step
     t_prev = t_curr;
     x_prev = x_curr;
+    K_curr = decltype(K_curr){};
     push_back_curr();
   }
 
-  template <size_t derivative_order = 0> auto eval(double t) const {
+  template <size_t derivative_order = 0> decltype(x_curr) eval(double t) const {
     if (t <= t_sequence[0]) { // initial_condition case
       // here we separate two cases, because it is rare that we need to define
       // the derivative of the initial condition, in which case
