@@ -67,8 +67,7 @@ template <typename Equation> struct Solver {
         state.t_curr = state.t_prev + state.t_step;
       state.x_curr = state.x_prev + delta_x;
 
-      /*state.error_curr = norm(delta_x - delta_x_hat);*/
-      state.error_curr = delta_x - delta_x_hat; // ?
+      state.error_curr = delta_x - delta_x_hat;
     };
 
     events.start_events(state);
@@ -82,7 +81,6 @@ template <typename Equation> struct Solver {
       runge_kutta_step();
 
       // stepsize for the next step, even if this step is rejected
-      /*state.t_step = stepsize_controller.template new_stepsize<RK>(state);*/
       bool reject_step = stepsize_controller.template set_stepsize<RK>(state);
       state.t_step = std::min(state.t_step, final_time - state.t_curr);
 

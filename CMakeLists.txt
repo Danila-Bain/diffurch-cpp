@@ -12,6 +12,7 @@ set(SOURCES
   test/global_error.cpp
   test/event_detection.cpp
   test/discontinuous.cpp
+  test/adaptive_stepsize.cpp
   test/api/events.cpp
   test/api/math.cpp
   test/api/hist.cpp

@@ -23,24 +23,26 @@ struct AdaptiveStepsize {
   double safety_factor = 4; // more is safer but more expencive
   double max_factor = 5;
 
+  double max_stepsize = 10;
+  double min_stepsize = 0.000001;
+
   template <typename RK, typename StateT> bool set_stepsize(StateT &state) {
     static constexpr size_t n = StateT::n;
 
     double error = 0;
     for (size_t i = 0; i < n; i++) {
-      error = max(error,
-                  state.error_curr[i] / (atol + abs(state.x_curr[i]) * rtol));
+      error = std::max(error, std::abs(state.error_curr[i]) /
+                                  (atol + std::abs(state.x_curr[i]) * rtol));
     }
-
-    error *= safety_factor; // makes the resulting step is smaller
 
     double fac;
     static constexpr size_t q = std::min(RK::order_embedded, RK::order);
-    fac = pow(error, -1. / (q + 1.));
+    fac = pow(error * safety_factor, -1. / (q + 1.));
     fac = std::min(fac, max_factor);
     fac = std::max(fac, 1. / max_factor);
 
-    state.t_step = state.t_step * fac;
+    state.t_step =
+        std::min(max_stepsize, std::max(min_stepsize, state.t_step * fac));
     return error > 1;
   };
 };
