@@ -124,6 +124,4 @@ What I propose is to test different things separately, because truly exaustive t
 
 - For delayed equations, stepsizes smaller than the delay are not handled.
 - The order of output vectors corresponding to events is not the same as the order in which those events are defined
-- Double-detection example. We detect zero between -1 and 1, going from negative to positive. We locate this zero, and take the latest approximation 1.e-16, at which the value is 2.e-16. Then, we step to this point, but after that the value at 1.e-16 becomes -1.5e-16, i.e. it is acually the pre-event point. Then, because it's sign is negative, the zero detection will trigger again. How to solve it? Basically, one of the triggers must go away:
-  - suppress this event detection for one step
-  - do not trigger the previous event callback, since after the first step onto 1.e-16 the event detection no longer active, then, we proceed, event is triggered again, and hopefully, we not missing the second time, starting so close to it.
+

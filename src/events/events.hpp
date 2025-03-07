@@ -150,8 +150,10 @@ template <typename... EventTypes> struct Events {
       (
           [&state, this](auto &&event, size_t index) {
             if (index == located_event_index) {
-              event(state);
+              if (event.detect(state)) // if event is still detected
+                event(state);
               located_event_index = -1;
+              return;
             }
           }(std::get<Is>(detection_events), Is),
           ...);
