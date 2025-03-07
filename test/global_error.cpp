@@ -7,6 +7,8 @@
 /*#include <cmath>*/
 /*#include <matplot/matplot.h>*/
 
+#include <iomanip>
+#include <iostream>
 #include <matplotlibcpp.h>
 #include <numpy/arrayobject.h>
 
@@ -75,6 +77,12 @@ int main(int, char *[]) {
     std::cout << eq.repr() << std::endl;
     auto err = test::global_error<rk98>(eq, -10, 10, stepsizes);
     // std::cout << err << std::endl;
+    plt::named_loglog(eq.repr(), stepsizes, err);
+  }
+  {
+    auto eq = equation::Relay2();
+    std::cout << eq.repr() << std::endl;
+    auto err = test::global_error<rk98>(eq, -0.1, 19, stepsizes);
     plt::named_loglog(eq.repr(), stepsizes, err);
   }
 
