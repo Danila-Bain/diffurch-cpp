@@ -7,6 +7,7 @@ set(SOURCES
   examples/ndde_plot.cpp
   examples/harmonic_oscillator.cpp
   examples/lorenz.cpp
+  examples/lorenz_map.cpp
   examples/linear_ndde.cpp
   test/global_error.cpp
   test/event_detection.cpp
