@@ -19,7 +19,6 @@ set(SOURCES
   test/api/math.cpp
   test/api/hist.cpp
   test/educational/constness.cpp
-  test/educational/describe.cpp
 )
 
 execute_process(
