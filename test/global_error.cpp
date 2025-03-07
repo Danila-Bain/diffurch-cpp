@@ -28,45 +28,52 @@ int main(int, char *[]) {
     /*std::cout << err << std::endl;*/
     plt::named_loglog(eq.repr(), stepsizes, err);
   }
+  // {
+  //   auto eq = equation::Linear1(1.);
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   /*std::cout << err << std::endl;*/
+  //   std::cout << eq.repr() << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
+  // {
+  //   auto eq = equation::LogOscillator();
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   /*std::cout << err << std::endl;*/
+  //   std::cout << eq.repr() << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
+  // {
+  //   auto eq = equation::LinearDDE1Exp();
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   /*std::cout << err << std::endl;*/
+  //   std::cout << eq.repr() << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
+  // {
+  //   auto eq = equation::LinearDDE1Sin();
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   /*std::cout << err << std::endl;*/
+  //   std::cout << eq.repr() << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
+  // {
+  //   auto eq = equation::LinearDDE2Sin();
+  //   std::cout << eq.repr() << std::endl;
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   // std::cout << err << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
+  // {
+  //   auto eq = equation::LinearNDDE1Sin();
+  //   std::cout << eq.repr() << std::endl;
+  //   auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+  //   // std::cout << err << std::endl;
+  //   plt::named_loglog(eq.repr(), stepsizes, err);
+  // }
   {
-    auto eq = equation::Linear1(1.);
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
-    /*std::cout << err << std::endl;*/
+    auto eq = equation::Relay1();
     std::cout << eq.repr() << std::endl;
-    plt::named_loglog(eq.repr(), stepsizes, err);
-  }
-  {
-    auto eq = equation::LogOscillator();
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
-    /*std::cout << err << std::endl;*/
-    std::cout << eq.repr() << std::endl;
-    plt::named_loglog(eq.repr(), stepsizes, err);
-  }
-  {
-    auto eq = equation::LinearDDE1Exp();
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
-    /*std::cout << err << std::endl;*/
-    std::cout << eq.repr() << std::endl;
-    plt::named_loglog(eq.repr(), stepsizes, err);
-  }
-  {
-    auto eq = equation::LinearDDE1Sin();
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
-    /*std::cout << err << std::endl;*/
-    std::cout << eq.repr() << std::endl;
-    plt::named_loglog(eq.repr(), stepsizes, err);
-  }
-  {
-    auto eq = equation::LinearDDE2Sin();
-    std::cout << eq.repr() << std::endl;
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
-    // std::cout << err << std::endl;
-    plt::named_loglog(eq.repr(), stepsizes, err);
-  }
-  {
-    auto eq = equation::LinearNDDE1Sin();
-    std::cout << eq.repr() << std::endl;
-    auto err = test::global_error<rk98>(eq, 0, 10, stepsizes);
+    auto err = test::global_error<rk98>(eq, -10, 10, stepsizes);
     // std::cout << err << std::endl;
     plt::named_loglog(eq.repr(), stepsizes, err);
   }

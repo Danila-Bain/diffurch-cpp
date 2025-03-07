@@ -9,6 +9,7 @@ set(SOURCES
   examples/lorenz.cpp
   examples/lorenz_map.cpp
   examples/linear_ndde.cpp
+  examples/relay1.cpp
   test/global_error.cpp
   test/event_detection.cpp
   test/discontinuous.cpp
