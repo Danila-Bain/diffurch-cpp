@@ -9,15 +9,13 @@
 
 namespace diffurch {
 
-template <typename RK, typename InitialConditionHandlerType> struct State {
+template <typename RK, typename ICType> struct State {
 
   static constexpr size_t n =
-      std::tuple_size<decltype(std::declval<InitialConditionHandlerType>()(
-          0.))>::value;
-
-  InitialConditionHandlerType ic;
+      std::tuple_size<decltype(std::declval<ICType>()(0.))>::value;
 
   // independent variable
+  double t_init;
   double t_curr;
   double t_prev;
   double t_step;
@@ -25,6 +23,7 @@ template <typename RK, typename InitialConditionHandlerType> struct State {
   std::vector<decltype(t_curr)> t_sequence;
 
   // dependent variable
+  ICType x_init;
   Vec<n> x_curr;
   Vec<n> x_prev;
   // should be a queue, used only for interpolation
@@ -38,9 +37,10 @@ template <typename RK, typename InitialConditionHandlerType> struct State {
 
   Vec<n> error_curr;
 
-  State(double initial_time, InitialConditionHandlerType ic_)
-      : ic(ic_), t_curr(initial_time), t_prev(t_curr), t_sequence({t_curr}),
-        x_curr(ic(initial_time)), x_prev(x_curr), x_sequence({x_curr}) {};
+  State(double t_init, ICType x_init)
+      : t_init(t_init), t_curr(t_init), t_prev(t_curr), t_sequence({t_curr}),
+        x_init(x_init), x_curr(x_init(t_init)), x_prev(x_curr),
+        x_sequence({x_curr}) {};
 
   void push_back_curr() {
     t_sequence.push_back(t_curr);
@@ -65,43 +65,40 @@ template <typename RK, typename InitialConditionHandlerType> struct State {
       // initial_condition is defined as a template instead of a regular member
       // function.
       if constexpr (derivative_order == 0)
-        return ic(t);
-      else if constexpr (IsStateExpression<decltype(ic)>) {
-        static const auto ic_derivative = D<derivative_order>(ic);
-        return ic_derivative(t);
+        return x_init(t);
+      else if constexpr (IsStateExpression<decltype(x_init)>) {
+        static const auto x_init_derivative = D<derivative_order>(x_init);
+        return x_init_derivative(t);
       } else { // fallback for non-symbolic initial condition functions
-        return ic.template eval<derivative_order>(t);
+        return x_init.template eval<derivative_order>(t);
       }
+    } else if (t >= t_prev && t <= t_curr) {
+      double h = t_curr - t_prev;
+      double theta = (t - t_prev) / h;
+
+      auto result =
+          dot(eval_array<derivative_order>(RK::bs, theta), K_curr, RK::s);
+      if constexpr (derivative_order == 0)
+        result = x_prev + h * result;
+      else
+        result = pow(h, 1 - derivative_order) * result;
+      return result;
     } else {
       // t_sequence[i] would be the first element > t
+      // std::cout << i << "/" << t_sequence.size() << std::endl;
       int i = std::distance(
           t_sequence.begin(),
           std::upper_bound(t_sequence.begin(), t_sequence.end(), t));
-      // std::cout << i << "/" << t_sequence.size() << std::endl;
+      double h = t_sequence[i] - t_sequence[i - 1];
+      double theta = (t - t_sequence[i - 1]) / h;
 
-      if (i == t_sequence.size()) {
-        double h = t_curr - t_prev;
-        double theta = (t - t_prev) / h;
-
-        auto result =
-            dot(eval_array<derivative_order>(RK::bs, theta), K_curr, RK::s);
-        if constexpr (derivative_order == 0)
-          result = x_prev + h * result;
-        else
-          result = pow(h, 1 - derivative_order) * result;
-        return result;
-      } else {
-        double h = t_sequence[i] - t_sequence[i - 1];
-        double theta = (t - t_sequence[i - 1]) / h;
-
-        auto result = dot(eval_array<derivative_order>(RK::bs, theta),
-                          K_sequence[i - 1], RK::s);
-        if constexpr (derivative_order == 0)
-          result = x_sequence[i - 1] + h * result;
-        else
-          result = pow(h, 1 - derivative_order) * result;
-        return result;
-      }
+      auto result = dot(eval_array<derivative_order>(RK::bs, theta),
+                        K_sequence[i - 1], RK::s);
+      if constexpr (derivative_order == 0)
+        result = x_sequence[i - 1] + h * result;
+      else
+        result = pow(h, 1 - derivative_order) * result;
+      return result;
     }
   }
 };
