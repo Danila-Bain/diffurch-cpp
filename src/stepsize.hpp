@@ -17,14 +17,14 @@ struct ConstantStepsize {
 };
 
 struct AdaptiveStepsize {
-  double atol = 0.001;
-  double rtol = 0.001;
+  double atol = 1.e-7;
+  double rtol = 1.e-7;
   double initial_stepsize = 0.05;
   double safety_factor = 4; // more is safer but more expencive
   double max_factor = 5;
 
   double max_stepsize = 10;
-  double min_stepsize = 0.000001;
+  double min_stepsize = 1.e-7;
 
   template <typename RK, typename StateT> bool set_stepsize(StateT &state) {
     static constexpr size_t n = StateT::n;
