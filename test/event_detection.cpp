@@ -29,32 +29,112 @@ struct ConstRHS : Solver<ConstRHS> {
 int main(int, char *[]) {
 
   {
-    auto eq = ConstRHS(1., -1.);
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
     auto sol =
         eq.solution(-1, 1, ConstantStepsize(0.4),
                     std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = ConstRHS(1., -1.);
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
     auto sol =
         eq.solution(-1, 1, ConstantStepsize(0.500),
                     std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = ConstRHS(-1., 1.);
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
     auto sol =
         eq.solution(-1, 1, ConstantStepsize(0.49),
                     std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
     std::cout << sol << std::endl; //
   }
   {
-    auto eq = ConstRHS(-1., 1.);
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
     auto sol =
         eq.solution(-1, 1, ConstantStepsize(0.500),
-                    std::make_tuple(Event(When(x == 0)), StepEvent(t | x)));
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
     std::cout << sol << std::endl; //
   }
+
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t - 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.500),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t + 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.500),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t - 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.4),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t + 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol =
+        eq.solution(-1, 1, ConstantStepsize(0.4),
+                    std::make_tuple(Event(When(x == 0), t), StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t + 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol = eq.solution(-1, 1, ConstantStepsize(0.4),
+                           std::make_tuple(Event(When(x == 0), t | 0),
+                                           Event(When(x == 0), t | 1),
+                                           StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+
+  {
+    struct EQ : Solver<EQ> {
+      auto get_ic() { return Vector(t * (t + 2)); }
+      auto get_rhs() { return D(get_ic()); }
+    } eq;
+    auto sol = eq.solution(-1, 1, ConstantStepsize(0.4),
+                           std::make_tuple(Event(When(x == 0), t | 0),
+                                           Event(When(x == 0.00001), t | 1),
+                                           StepEvent(t | x)));
+    std::cout << sol << std::endl; //
+  }
+
   return 0;
 }
