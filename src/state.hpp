@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "symbolic.hpp"
-#include "symbolic/expression.hpp"
 #include <algorithm>
 #include <vector>
 
@@ -66,7 +65,7 @@ template <typename RK, typename ICType> struct State {
       // function.
       if constexpr (derivative_order == 0)
         return x_init(t);
-      else if constexpr (IsStateExpression<decltype(x_init)>) {
+      else if constexpr (IsSymbol<decltype(x_init)>) {
         static const auto x_init_derivative = D<derivative_order>(x_init);
         return x_init_derivative(t);
       } else { // fallback for non-symbolic initial condition functions

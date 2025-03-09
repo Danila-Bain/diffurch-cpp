@@ -1,13 +1,13 @@
 #pragma once
 
-#include "expression.hpp"
+#include "symbol_types.hpp"
 #include "variables.hpp"
 #include <cstddef> // for size_t
 #include <tuple>
 
 namespace diffurch {
 
-template <IsStateExpression... Coordinates> struct Vector : StateExpression {
+template <IsSymbol... Coordinates> struct Vector : Symbol {
   std::tuple<Coordinates...> coordinates;
 
   Vector(Coordinates... coordinates_)
@@ -47,21 +47,19 @@ template <IsStateExpression... Coordinates> struct Vector : StateExpression {
   }
 };
 
-template <IsStateExpression L, IsStateExpression R> auto operator|(L l, R r) {
+template <IsSymbol L, IsSymbol R> auto operator|(L l, R r) {
   return Vector(l, r);
 }
 
-template <IsStateExpression... L, IsStateExpression R>
-auto operator|(Vector<L...> l, R r) {
+template <IsSymbol... L, IsSymbol R> auto operator|(Vector<L...> l, R r) {
   return Vector(std::tuple_cat(l.coordinates, std::make_tuple(r)));
 }
 
-template <IsStateExpression L, IsNotStateExpression R>
-auto operator|(L l, R r) {
+template <IsSymbol L, IsNotSymbol R> auto operator|(L l, R r) {
   return l | Constant<R>(r);
 }
 
-template <size_t derivative = 1, IsStateExpression... Coordinates>
+template <size_t derivative = 1, IsSymbol... Coordinates>
 constexpr auto D(const Vector<Coordinates...> &vector) {
   if constexpr (derivative == 0) {
     return vector;
@@ -72,12 +70,11 @@ constexpr auto D(const Vector<Coordinates...> &vector) {
   }
 }
 
-template <IsStateExpression L, IsStateExpression R> auto operator&(L l, R r) {
+template <IsSymbol L, IsSymbol R> auto operator&(L l, R r) {
   return std::make_tuple(l, r);
 }
 
-template <IsStateExpression... L, IsStateExpression R>
-auto operator&(std::tuple<L...> l, R r) {
+template <IsSymbol... L, IsSymbol R> auto operator&(std::tuple<L...> l, R r) {
   return std::tuple_cat(l, std::make_tuple(r));
 }
 

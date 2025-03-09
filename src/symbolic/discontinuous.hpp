@@ -1,14 +1,14 @@
 #pragma once
 
 #include "../util/math.hpp"
-#include "event_detection.hpp"
-#include "expression.hpp"
+#include "detect_symbols.hpp"
+#include "symbol_types.hpp"
 #include <cstddef>
 #include <tuple>
 
 namespace diffurch {
 
-template <IsStateExpression Arg> struct dsign : StateExpression {
+template <IsSymbol Arg> struct dsign : Symbol {
   Arg arg;
   dsign(Arg arg_) : arg(arg_) {}
   double curr_value = 0;
@@ -27,7 +27,7 @@ template <IsStateExpression Arg> struct dsign : StateExpression {
                                                 })));
   }
 };
-template <std::size_t derivative = 1, IsStateExpression Arg>
+template <std::size_t derivative = 1, IsSymbol Arg>
 constexpr auto D(const dsign<Arg> &sign_) {
   if constexpr (derivative == 0)
     return sign_;
@@ -35,7 +35,7 @@ constexpr auto D(const dsign<Arg> &sign_) {
     return D<derivative - 1>(2 * delta(sign_.arg) * D(sign_.arg));
 }
 
-template <IsStateExpression Arg> struct dstep : StateExpression {
+template <IsSymbol Arg> struct dstep : Symbol {
   Arg arg;
   const double low_value;
   const double high_value;
@@ -60,7 +60,7 @@ template <IsStateExpression Arg> struct dstep : StateExpression {
             })));
   }
 };
-template <std::size_t derivative = 1, IsStateExpression Arg>
+template <std::size_t derivative = 1, IsSymbol Arg>
 constexpr auto D(const dstep<Arg> &step_) {
   if constexpr (derivative == 0)
     return step_;
@@ -69,7 +69,7 @@ constexpr auto D(const dstep<Arg> &step_) {
                              delta(step_.arg) * D(step_.arg));
 }
 
-template <IsStateExpression Arg> struct dabs : StateExpression {
+template <IsSymbol Arg> struct dabs : Symbol {
   Arg arg;
 
   dabs(Arg arg_) : arg(arg_) {}
@@ -91,7 +91,7 @@ template <IsStateExpression Arg> struct dabs : StateExpression {
                                                 })));
   }
 };
-template <std::size_t derivative = 1, IsStateExpression Arg>
+template <std::size_t derivative = 1, IsSymbol Arg>
 constexpr auto D(const dabs<Arg> &abs_) {
   if constexpr (derivative == 0)
     return abs_;
@@ -99,7 +99,7 @@ constexpr auto D(const dabs<Arg> &abs_) {
     return D<derivative - 1>(dsign(abs_.arg) * D(abs_.arg));
 }
 
-template <IsStateExpression Arg> struct drelu : StateExpression {
+template <IsSymbol Arg> struct drelu : Symbol {
   Arg arg;
 
   drelu(Arg arg_) : arg(arg_) {}
@@ -120,7 +120,7 @@ template <IsStateExpression Arg> struct drelu : StateExpression {
             })));
   }
 };
-template <std::size_t derivative = 1, IsStateExpression Arg>
+template <std::size_t derivative = 1, IsSymbol Arg>
 constexpr auto D(const drelu<Arg> &relu_) {
   if constexpr (derivative == 0)
     return relu_;
@@ -128,9 +128,8 @@ constexpr auto D(const drelu<Arg> &relu_) {
     return D<derivative - 1>(dstep(relu_.arg) * D(relu_.arg));
 }
 
-template <IsStateBoolExpression Condition, IsStateExpression ExprIfTrue,
-          IsStateExpression ExprIfFalse>
-struct dpiecewise : StateExpression {
+template <IsBoolSymbol Condition, IsSymbol ExprIfTrue, IsSymbol ExprIfFalse>
+struct dpiecewise : Symbol {
   Condition condition;
   ExprIfTrue expr_if_true;
   ExprIfFalse expr_if_false;
@@ -161,7 +160,7 @@ struct dpiecewise : StateExpression {
   }
 };
 
-template <IsStateExpression Arg> struct dclip : StateExpression {
+template <IsSymbol Arg> struct dclip : Symbol {
   Arg arg;
   const double min_value;
   const double max_value;
@@ -200,7 +199,7 @@ template <IsStateExpression Arg> struct dclip : StateExpression {
   }
 };
 
-template <IsStateExpression Arg> struct delta : StateExpression {
+template <IsSymbol Arg> struct delta : Symbol {
   Arg arg;
   delta(Arg arg_) : arg(arg_) {}
 

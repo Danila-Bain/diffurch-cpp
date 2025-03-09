@@ -1,13 +1,13 @@
 #pragma once
 
 #include "../util/math.hpp"
-#include "expression.hpp"
+#include "symbol_types.hpp"
 #include <math.h>
 
 namespace diffurch {
 
 #define STATE_FUNCTION_OVERLOAD(func, func_derivative)                         \
-  template <IsStateExpression Arg> struct Function_##func : StateExpression {  \
+  template <IsSymbol Arg> struct Function_##func : Symbol {                    \
     Arg arg;                                                                   \
     Function_##func(Arg arg_) : arg(arg_) {}                                   \
     auto operator()(const auto &state) const { return func(arg(state)); }      \
@@ -20,10 +20,8 @@ namespace diffurch {
       return arg.template get_events<current_coordinate>();                    \
     }                                                                          \
   };                                                                           \
-  template <IsStateExpression Arg> auto func(Arg arg) {                        \
-    return Function_##func(arg);                                               \
-  }                                                                            \
-  template <size_t derivative = 1, IsStateExpression Arg>                      \
+  template <IsSymbol Arg> auto func(Arg arg) { return Function_##func(arg); }  \
+  template <size_t derivative = 1, IsSymbol Arg>                               \
   constexpr auto D(const Function_##func<Arg> &func) {                         \
     if constexpr (derivative == 0)                                             \
       return func;                                                             \
@@ -50,8 +48,7 @@ STATE_FUNCTION_OVERLOAD(step, [](auto...) { return 0.; });
 /*VARIABLE_OVERLOAD_FUNCTION_2(pow);*/
 /*VARIABLE_OVERLOAD_FUNCTION_2(atan2);*/
 
-template <IsStateExpression Arg, typename Callable>
-struct state_function : StateExpression {
+template <IsSymbol Arg, typename Callable> struct state_function : Symbol {
 
   Arg arg;
   Callable func;

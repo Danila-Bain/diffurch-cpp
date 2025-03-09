@@ -13,9 +13,9 @@ namespace diffurch {
   template <typename T>                                                        \
   concept IsNot##NAME = !std::is_base_of_v<NAME, std::decay_t<T>>;
 
-DECLARE_STATE_EXPRESSION_TYPE(StateExpression);
-DECLARE_STATE_EXPRESSION_TYPE(StateBoolExpression);
-DECLARE_STATE_EXPRESSION_TYPE(StateDetectExpression);
-DECLARE_STATE_EXPRESSION_TYPE(StateSetExpression);
+DECLARE_STATE_EXPRESSION_TYPE(Symbol);
+DECLARE_STATE_EXPRESSION_TYPE(BoolSymbol);
+DECLARE_STATE_EXPRESSION_TYPE(DetectSymbol);
+DECLARE_STATE_EXPRESSION_TYPE(SetSymbol);
 
 } // namespace diffurch

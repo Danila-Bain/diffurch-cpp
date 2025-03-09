@@ -110,15 +110,15 @@ What I propose is to test different things separately, because truly exaustive t
     - various non-hyperbolic periodic orbits
     - trajectories on hyperbolic invariant torus
 
+# Optimization Ideas
+- For `eval` method of `state`, add a template parameter, such that only the required coordinate is computed.
+
 
 # Other Ideas 
 - Instead of delta_x_hat, provided by the embedded scheme, we can compute the error estimation directly, if we use coefficient vector (b - bb) in place of bb.
 - For now, the "solution" function is provided for equations by means of curiously recurring template pattern. I think it would be usefull to provide several interfaces, such as simply define a template function, that accepts equation class object as a parameter (which also would have to define "get_ic" and "get_rhs" methods).
 - By means of symbolic differentiation, it is possible to automatically derive the variational equation, even for discontinuous equations.
 - Possiblity to extending this library to work with partial differential equations is yet to be explored. Although the discretization (reducing to ODE) can be done manually, perhaps for many types of problems the discretization can be done automatically.
-
-# Documentation
-- Add more details to [the state page](doc/api/state.md), with regard to usage of its member variables during integration.
 
 # Known Issues
 

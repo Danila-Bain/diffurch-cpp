@@ -18,6 +18,7 @@ set(SOURCES
   test/api/events.cpp
   test/api/math.cpp
   test/api/hist.cpp
+  test/api/symbols.cpp
   test/educational/constness.cpp
 )
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../events.hpp"
-#include "expression.hpp"
+#include "symbol_types.hpp"
 #include <math.h>
 #include <utility>
 
@@ -59,18 +59,18 @@ namespace diffurch {
     return op_name(arg);                                                       \
   }
 
-STATE_OPERATOR_OVERLOAD(+, Add, StateExpression, StateExpression);
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+STATE_OPERATOR_OVERLOAD(+, Add, Symbol, Symbol);
+template <size_t derivative = 1, IsSymbol L, IsSymbol R>
 constexpr auto D(const Add<L, R> &add) {
   return D<derivative>(add.l) + D<derivative>(add.r);
 }
-STATE_OPERATOR_OVERLOAD(-, Sub, StateExpression, StateExpression);
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+STATE_OPERATOR_OVERLOAD(-, Sub, Symbol, Symbol);
+template <size_t derivative = 1, IsSymbol L, IsSymbol R>
 constexpr auto D(const Sub<L, R> &sub) {
   return D<derivative>(sub.l) - D<derivative>(sub.r);
 }
-STATE_OPERATOR_OVERLOAD(*, Mul, StateExpression, StateExpression);
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+STATE_OPERATOR_OVERLOAD(*, Mul, Symbol, Symbol);
+template <size_t derivative = 1, IsSymbol L, IsSymbol R>
 constexpr auto D(const Mul<L, R> &mul) {
   if constexpr (derivative == 0)
     return mul;
@@ -78,8 +78,8 @@ constexpr auto D(const Mul<L, R> &mul) {
     return D<derivative - 1>(D(mul.l) * mul.r + mul.l * D(mul.r));
 }
 
-STATE_OPERATOR_OVERLOAD(/, Div, StateExpression, StateExpression);
-template <size_t derivative = 1, IsStateExpression L, IsStateExpression R>
+STATE_OPERATOR_OVERLOAD(/, Div, Symbol, Symbol);
+template <size_t derivative = 1, IsSymbol L, IsSymbol R>
 constexpr auto D(const Div<L, R> &div) {
   if constexpr (derivative == 0)
     return div;
@@ -88,28 +88,26 @@ constexpr auto D(const Div<L, R> &div) {
                              (div.r * div.r));
 }
 
-STATE_UNARY_OPERATOR_OVERLOAD(-, Neg, StateExpression, StateExpression);
-template <size_t derivative = 1, IsStateExpression Arg>
+STATE_UNARY_OPERATOR_OVERLOAD(-, Neg, Symbol, Symbol);
+template <size_t derivative = 1, IsSymbol Arg>
 constexpr auto D(const Neg<Arg> &neg) {
   return -D<derivative>(neg.arg);
 }
 
 // UNARY PLUS is NoOp
-template <IsStateExpression Arg> auto operator+(Arg arg) { return arg; }
+template <IsSymbol Arg> auto operator+(Arg arg) { return arg; }
 
-STATE_OPERATOR_OVERLOAD(==, Equal, StateExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(!=, NotEqual, StateExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(<, Less, StateExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(>, Greater, StateExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(<=, LessEqual, StateExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(>=, GreaterEqual, StateExpression, StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(==, Equal, Symbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(!=, NotEqual, Symbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(<, Less, Symbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(>, Greater, Symbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(<=, LessEqual, Symbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(>=, GreaterEqual, Symbol, BoolSymbol);
 
-STATE_OPERATOR_OVERLOAD(&&, And, StateBoolExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(||, Or, StateBoolExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(!=, Xor, StateBoolExpression, StateBoolExpression);
-STATE_OPERATOR_OVERLOAD(==, BoolEqual, StateBoolExpression,
-                        StateBoolExpression);
-STATE_UNARY_OPERATOR_OVERLOAD(!, BoolNeg, StateBoolExpression,
-                              StateBoolExpression);
+STATE_OPERATOR_OVERLOAD(&&, And, BoolSymbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(||, Or, BoolSymbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(!=, Xor, BoolSymbol, BoolSymbol);
+STATE_OPERATOR_OVERLOAD(==, BoolEqual, BoolSymbol, BoolSymbol);
+STATE_UNARY_OPERATOR_OVERLOAD(!, BoolNeg, BoolSymbol, BoolSymbol);
 
 } // namespace diffurch

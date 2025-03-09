@@ -1,14 +1,14 @@
 #pragma once
 
-#include "expression.hpp"
 #include "operators.hpp"
+#include "symbol_types.hpp"
 
 #include "../util/find_root.hpp"
 #include <limits>
 
 namespace diffurch {
 
-template <IsStateBoolExpression Arg> struct WhenSwitch : StateDetectExpression {
+template <IsBoolSymbol Arg> struct WhenSwitch : DetectSymbol {
   Arg arg;
   WhenSwitch(Arg arg_) : arg(arg_) {};
 
@@ -25,7 +25,7 @@ template <IsStateBoolExpression Arg> struct WhenSwitch : StateDetectExpression {
   }
 };
 
-template <IsStateExpression Arg> struct WhenZeroCross : StateDetectExpression {
+template <IsSymbol Arg> struct WhenZeroCross : DetectSymbol {
   Arg arg;
   WhenZeroCross(Arg arg_) : arg(arg_) {};
 
@@ -56,8 +56,7 @@ template <IsStateExpression Arg> struct WhenZeroCross : StateDetectExpression {
   }
 };
 
-template <IsStateExpression Arg>
-struct WhenZeroCrossFromBelow : StateDetectExpression {
+template <IsSymbol Arg> struct WhenZeroCrossFromBelow : DetectSymbol {
   Arg arg;
   WhenZeroCrossFromBelow(Arg arg_) : arg(arg_) {};
   bool detect(const auto &state) const {
@@ -73,8 +72,7 @@ struct WhenZeroCrossFromBelow : StateDetectExpression {
     }
   }
 };
-template <IsStateExpression Arg>
-struct WhenZeroCrossFromAbove : StateDetectExpression {
+template <IsSymbol Arg> struct WhenZeroCrossFromAbove : DetectSymbol {
   Arg arg;
   WhenZeroCrossFromAbove(Arg arg_) : arg(arg_) {};
   bool detect(const auto &state) const {
@@ -93,7 +91,7 @@ struct WhenZeroCrossFromAbove : StateDetectExpression {
 
 // support for When(x == 0) or When(x > 0) syntax
 #define STATE_CROSS_EVENT_FROM_COMP(comparison_operator, cross_event_type)     \
-  template <IsStateExpression L, IsStateExpression R>                          \
+  template <IsSymbol L, IsSymbol R>                                            \
   auto When(const comparison_operator<L, R> &bool_expr) {                      \
     return cross_event_type(bool_expr.l - bool_expr.r);                        \
   }
@@ -104,8 +102,8 @@ STATE_CROSS_EVENT_FROM_COMP(GreaterEqual, WhenZeroCrossFromBelow);
 STATE_CROSS_EVENT_FROM_COMP(Less, WhenZeroCrossFromAbove);
 STATE_CROSS_EVENT_FROM_COMP(LessEqual, WhenZeroCrossFromAbove);
 
-template <IsStateDetectExpression Event, IsStateBoolExpression Condition>
-struct StateDetectWithLocationCondition : StateDetectExpression {
+template <IsDetectSymbol Event, IsBoolSymbol Condition>
+struct StateDetectWithLocationCondition : DetectSymbol {
   Event event;
   Condition condition;
   StateDetectWithLocationCondition(Event event_, Condition condition_)
@@ -128,8 +126,8 @@ struct StateDetectWithLocationCondition : StateDetectExpression {
   }
 };
 
-template <IsStateDetectExpression Event, IsStateBoolExpression Condition>
-struct StateDetectWithDetectionCondition : StateDetectExpression {
+template <IsDetectSymbol Event, IsBoolSymbol Condition>
+struct StateDetectWithDetectionCondition : DetectSymbol {
   Event event;
   Condition condition;
   StateDetectWithDetectionCondition(Event event_, Condition condition_)
@@ -149,7 +147,7 @@ struct StateDetectWithDetectionCondition : StateDetectExpression {
 };
 
 #define EVENT_WITH_CONDITION_OVERLOAD_OPERATOR(op, op_name)                    \
-  template <IsStateDetectExpression Event, IsStateBoolExpression Condition>    \
+  template <IsDetectSymbol Event, IsBoolSymbol Condition>                      \
   auto operator op(Event event, Condition condition) {                         \
     return op_name(event, condition);                                          \
   }
