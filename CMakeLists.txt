@@ -11,6 +11,7 @@ set(SOURCES
   examples/linear_ndde.cpp
   examples/relay1.cpp
   examples/relay2.cpp
+  examples/relay_dde_2.cpp
   test/global_error.cpp
   test/event_detection.cpp
   test/discontinuous.cpp
