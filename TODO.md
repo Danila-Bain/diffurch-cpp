@@ -1,11 +1,20 @@
 The list below represents a combination of high-priority work, nice-to-have features, and random ideas. We make no guarantees that all of this work will be completed or even started. If you see something that you need or would like to have, let us know, or better yet consider submitting a PR for the feature.
+# Top priority 
 
-# Current top priority tasks
+Here I list what, in my opinion, presents the most challenge for the progress of this project.
 
-Hold on with any new features. Test, debug, and structure what already has been written:
-- Develop systematic approach for testing
-- Test adaptive stepsize 
-- Test simultanious and near-by events
+- Delay propagated events.
+    The idea is that, for delay differential equations, we need to catch initial discontinuity, and th propagated discontinuity points. For example, equation with `x(t-1)` should include the events `t - 1 == state.t_init`, `t - 2 == state.t_init`, etc. With the current framework, it can by done by manually adding the events `EventOnce(When(t-1 == state.t_init))`, `EventOnce(When((t-1)-1 == state.t_init))`, etc.
+    
+    In the case, when the delay equation has events or discontinuities, delay propagated events are also required.
+
+    The propagated events should be managed automatically, the number of propagations depends on the order of the Runge-Kutta method.
+
+    Say, there is a discontinuity at the point `t_0`, which is found by zero crossing of function `b`, and there is a delayed term `x(t-1)`. Since `t_0` is already known, it would be wastefull to copute `t_0 + 1` as a zero of `b(t-1)`, it is prefferable to compute it as a zero of `t - 1 == t_0`. If several events are present on the unit time interval, the it is not sufficient just to save next `t_0` to track, it would be a queue, which is ugly. Or, alternatively, we can track the discontinuities by zero stepsizes. I.e., if between two step endpoints, the interval `t_prev - 1`, `t_curr - 1` contains a zero stepsize, then it is a dicontinuity and we need to step on it. The order of the discontinuity can be written in an unused `K_curr` variable, and then recovered and increased by 1.
+
+- Inractive interface support (different ways to pipe the data).
+
+- Error testing without analytic solution.
 
 # Symbolic
 
@@ -19,7 +28,8 @@ Hold on with any new features. Test, debug, and structure what already has been 
 
 # Events Detection
 
-- Delay propagated events.
+- Delay propagated events. (CHALLENGE)
+
 - Allow for multiple event detection conditions, like in Wolfram Mathematica.
 - For zero crossing events, check not only changing signs, but also changing of of the sign of the derivative. In cases, when zero crossings are alike of the function `t^2 - 0.001`, catching points where the derivative changes allows to not miss near-by sign changes of the function. Also, Wolfram Mathematica does this with ("DetectionMethod" -> "DerivativeSign").
 - For derivatives of the state variable, try to evaluate it from rhs of the equation.
@@ -32,6 +42,8 @@ Hold on with any new features. Test, debug, and structure what already has been 
 - Add the event SubStepEvent(size_t n, ...), which would trigger after each step and evaluate its callbacks n times per step at an intermediate points.
 
 # Event Saving (for plain values)
+
+CHALLENGE:
 - (implemented) write the values in a tuple of vectors
 - write the values in the prescribed external vectors
 - pipe the values in a file as table (usefull for a very large outputs);
@@ -42,7 +54,6 @@ Hold on with any new features. Test, debug, and structure what already has been 
 
 - save the whole interpolating function
 - save one int or double value instead of a vector (for a singular events, like StartEvent, StopEvent, or ones having DisableEvent).
-
 
 # Event Setting
 - Add set handler StopIntegrationAfter(size_t n), which would stop integration after it is triggered n times.
@@ -64,6 +75,10 @@ Hold on with any new features. Test, debug, and structure what already has been 
 
 - PI vs I stepsize controllers (now only "I" is available in the form of AdaptiveStepsize)
 - AdaptiveStepsize needs testing
+
+# Testing functions
+
+- Extend `global_error` function to equations with no knwon analytical solution.
 
 # General ideas about testing
 
@@ -93,6 +108,18 @@ The main challenge lies not in the list of what to compare by, but in the list o
 What I propose is to test different things separately, because truly exaustive testing is imposible. For example, we can 
 - fix Runge-Kutta method and compare how it is performing for different equations and choises of the stepsize;
 - fix equation, and compare different Runge-Kutta schemes, stepsize controllers (or do it separetely for a handful of equations of different nature);
+
+# General thoughts about testing 2
+
+Why test? 
+
+## User need to know that the results are reliable
+
+It is impossible to test every equation against every method. So, it is impossible to test everything by myself and then present my library like the magic solution for any program. Instead, I should facilitate the user to test the efficiency of the chosen methods for their particular task. The function `diffurch::test::global_error` is the example: it is easy to check how the chosen method performs against the stepsize, if the analytical solution is known. 
+
+## Library developer needs to avoid bugs
+
+For that, a handful of test equations will suffice, which would show issues if their numerical solutions don't match the analytical solutions with sufficient precision. The main challenge here is that it is not clear how to automate the testing process. We can make a lot of tests, but with the approximating nature of the subject, I usually rely just on the visual test. We can save the result of the tests, and compare them between versions, ensuring that precision does not get worse after each update.
 
 # General testing
 
