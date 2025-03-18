@@ -66,7 +66,7 @@ template <typename RK, typename ICType> struct State {
       if constexpr (derivative_order == 0)
         return x_init(t);
       else if constexpr (IsSymbol<decltype(x_init)>) {
-        static const auto x_init_derivative = D<derivative_order>(x_init);
+        const auto x_init_derivative = D<derivative_order>(x_init);
         return x_init_derivative(t);
       } else { // fallback for non-symbolic initial condition functions
         return x_init.template eval<derivative_order>(t);

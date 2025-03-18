@@ -54,6 +54,22 @@ int main() {
     ASSERT(x == 4.2);
   }
 
+  {
+    auto f = t * t;
+    ASSERT(f(4.) == 4. * 4.);
+  }
+
+  {
+    auto f = t * t;
+    ASSERT(D(f)(4.) == 2. * 4.);
+  }
+
+  {
+    auto f = 3. * sin(2. * t);
+    ASSERT(D(f)(4.) == 3. * cos(2. * 4.) * 2.);
+    ASSERT(D(f)(4.) == 3. * 2. * cos(2. * 4.));
+  }
+
   if (error_count == 0) {
     cout << "All tests finished succesfully" << endl;
   } else {
