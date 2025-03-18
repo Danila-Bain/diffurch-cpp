@@ -12,6 +12,7 @@ set(SOURCES
   examples/relay1.cpp
   examples/relay2.cpp
   examples/relay_dde_2.cpp
+  examples/ndde_bomb.cpp
   test/global_error.cpp
   test/event_detection.cpp
   test/discontinuous.cpp
